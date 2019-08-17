@@ -1,4 +1,9 @@
-# Reinforcement-Learning-2019
+# Reinforcement-Learning-2019 - Training a robot hand to throw a ball
+
+### Important Documentations
+
+https://openai.github.io/mujoco-py/build/html/index.html (API of Physics Simulation)
+
 ### Installation for Macbook
 ```
 conda create mujoco_venv python=3.6 anaconda
