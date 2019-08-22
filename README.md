@@ -19,6 +19,17 @@ export CC=/usr/local/Cellar/gcc/9.1.0/bin/gcc-9
 
 pip install -U 'mujoco-py<2.1,>=2.0'
 ````
+## Installation on Ubuntu
+Add your mujoco bin path (export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/patrick/.mujoco/mujocoXXX/bin) to to end of your .bashrc via:
+```
+nano ~/.bashrc
+source ~/.bashrc
+````
+
+Run the following command from the terminal using the python.exe from your desired (conda) environment
+```
+pip install mujoco-py
+````
 
 ### Run and Smile :D
 
