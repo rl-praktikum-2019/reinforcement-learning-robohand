@@ -57,6 +57,7 @@ def train(sess, env, args, actor, critic, actor_noise):
         print("------------------------ Start episode number:", i)
         obs = env.reset()
         s = obs["observation"]
+
         ep_reward = 0
         ep_ave_max_q = 0
 
@@ -70,7 +71,7 @@ def train(sess, env, args, actor, critic, actor_noise):
             a = actor.predict(np.reshape(s, (1, actor.s_dim))) + actor_noise()
             obs2, r, terminal, info = env.step(a[0])
             s2 = obs2["observation"]
-            
+
             replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), r,
                               terminal, np.reshape(s2, (actor.s_dim,)))
 
