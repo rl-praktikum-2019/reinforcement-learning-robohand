@@ -7,7 +7,7 @@ BALL_OBJECT_NAME = "object"
 class MaxHeightRewardWrapper(gym.RewardWrapper):
     #
     #
-    # Adapt reward # 1 - maximize height and velocity and reward height increase
+    # Adapt reward # 1 - Maximize height and velocity, reward height increase
     #
     #
     def __init__(self, env, epsilon=0.1):
@@ -25,6 +25,7 @@ class MaxHeightRewardWrapper(gym.RewardWrapper):
 
         if height > self.prev_height:
             reward += 2
+            print("Increased height:", height)
             self.prev_height = height
         else:
             reward -= 2
@@ -32,6 +33,7 @@ class MaxHeightRewardWrapper(gym.RewardWrapper):
         if velocity_z > self.max_velocity:
             velocity_reward = velocity_z * 1000
             reward += velocity_reward
+            print("New achieved max velocity:", height)
             self.max_velocity = velocity_z
 
         if height > self.max_height:
@@ -55,7 +57,7 @@ class MaxHeightRewardWrapper(gym.RewardWrapper):
 class VelocityRewardWrapper(gym.RewardWrapper):
     #
     #
-    # Adapt reward # 2 - achieve desired velocity vector
+    # Adapt reward # 2 - Achieve desired velocity vector
     #
     #
     def __init__(self, env, epsilon=0.1):
@@ -71,7 +73,9 @@ class VelocityRewardWrapper(gym.RewardWrapper):
         _, positional_velocity, _ = self.get_ball_data()
         delta_vel = self.desired_ball_velocity - positional_velocity
         d_vel = np.linalg.norm(delta_vel, axis=-1)
-        reward += -(10. * d_vel)
+        vel_reward = (10. * d_vel)
+        print("Velocity reward:", -vel_reward)
+        reward += -vel_reward
 
         return reward
 
