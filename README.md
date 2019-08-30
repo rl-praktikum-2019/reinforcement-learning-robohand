@@ -25,7 +25,7 @@ Add your mujoco bin path (export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/patrick/
 nano ~/.bashrc
 source ~/.bashrc
 ````
-Add LD_LIBRARY_PATH with value as above as a environment variable to your run configuration of the main execution .py file.
+Add ``LD_LIBRARY_PATH`` with value as above as a environment variable to your run configuration of the main execution .py file.
 
 Run the following command from the terminal using the python.exe from your desired (conda) environment
 ```
