@@ -5,7 +5,10 @@
 
 https://openai.github.io/mujoco-py/build/html/index.html (API of Physics Simulation)
 http://www.mujoco.org/book/XMLreference.html (XML Reference - How to design a simulation environment via XML)
-### Installation for Macbook
+
+# Installation
+
+## Installation for Macbook
 ```
 conda create mujoco_venv python=3.6 anaconda
 conda activate mujoco_venv
@@ -33,6 +36,4 @@ Run the following command from the terminal using the python.exe from your desir
 pip install mujoco-py
 ````
 
-### Run and Smile :D
-
-`python run_mujoco_test.py`
+# Run
