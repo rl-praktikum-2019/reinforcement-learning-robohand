@@ -1,4 +1,5 @@
-# Reinforcement-Learning-2019 - Training a robot hand to throw a ball
+# LMU Reinforcement Learning Praktikum 2019
+##Training a robot hand to throw a ball
 
 ### Important Documentations
 
