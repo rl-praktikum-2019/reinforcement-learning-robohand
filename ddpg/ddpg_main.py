@@ -10,6 +10,7 @@ from ddpg.actor_network import ActorNetwork
 from ddpg.critic_network import CriticNetwork
 from utils.noise import OrnsteinUhlenbeckActionNoise
 from utils.replay_buffer import ReplayBuffer
+from wrappers.reward_wrappers import VelocityRewardWrapper
 
 """ 
 Implementation of DDPG - Deep Deterministic Policy Gradient
@@ -21,6 +22,7 @@ The algorithm is tested on the Pendulum-v0 OpenAI gym task
 and developed with tflearn + Tensorflow
 Author: Patrick Emami
 """
+
 
 def build_summaries():
     episode_reward = tf.Variable(0.)
@@ -53,6 +55,7 @@ def train(sess, env, args, actor, critic, actor_noise):
     # in other environments.
     tflearn.is_training(True)
 
+
     for i in range(int(args['max_episodes'])):
         print("------------------------ Start episode number:", i)
         obs = env.reset()
@@ -62,7 +65,7 @@ def train(sess, env, args, actor, critic, actor_noise):
         ep_ave_max_q = 0
 
         for j in range(int(args['max_episode_len'])):
-            print("Start episode step:", j+1)
+            print("Start episode step:", j + 1)
 
             if args['render_env']:
                 env.render()
@@ -70,6 +73,7 @@ def train(sess, env, args, actor, critic, actor_noise):
             # Added exploration noise
             a = actor.predict(np.reshape(s, (1, actor.s_dim))) + actor_noise()
             obs2, r, terminal, info = env.step(a[0])
+
             s2 = obs2["observation"]
 
             replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), r,
@@ -113,20 +117,21 @@ def train(sess, env, args, actor, critic, actor_noise):
             if terminal:
                 summary_str = sess.run(summary_ops, feed_dict={
                     summary_vars[0]: ep_reward,
-                    summary_vars[1]: ep_ave_max_q / float(j+1)
+                    summary_vars[1]: ep_ave_max_q / float(j + 1)
                 })
 
                 writer.add_summary(summary_str, i)
                 writer.flush()
 
-                print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), i, (ep_ave_max_q / float(j+1))))
+                print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), i,
+                                                                             (ep_ave_max_q / float(j + 1))))
                 break
 
 
 def main(args):
     with tf.Session() as sess:
 
-        env = gym.make(args['env'])
+        env = VelocityRewardWrapper(gym.make(args['env']))
         np.random.seed(int(args['random_seed']))
         tf.set_random_seed(int(args['random_seed']))
         env.seed(int(args['random_seed']))
@@ -137,7 +142,7 @@ def main(args):
         action_bound = env.action_space.high
 
         # Ensure action bound is symmetric
-        assert (all(env.action_space.high-env.action_space.low))
+        assert (all(env.action_space.high - env.action_space.low))
 
         actor = ActorNetwork(sess, state_dim, action_dim, action_bound,
                              float(args['actor_lr']), float(args['tau']),
@@ -163,6 +168,7 @@ def main(args):
             env.monitor.close()
 
         env.close()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='provide arguments for DDPG agent')
