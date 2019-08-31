@@ -25,19 +25,35 @@ export CC=/usr/local/Cellar/gcc/9.1.0/bin/gcc-9
 pip install -U 'mujoco-py<2.1,>=2.0'
 ````
 ## Installation on Ubuntu
+Get your mujoco license here by following the listed steps: https://www.roboti.us/license.html
+
+Download your desired MuJoCo binaries (not HAPTIX or Plugins) https://www.roboti.us/index.html
+
+Unzip to ``$HOME/.mujoco/mjpro1XXX/`` where XXX is the version number f.e. 200 for 2.0
+
+Add your key text file as described in the email from mujoco under ``$HOME/.mujoco/``.
+
 Add your mujoco bin path (export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/patrick/.mujoco/mujocoXXX/bin) to to end of your .bashrc via:
 ```
 nano ~/.bashrc
 source ~/.bashrc
 ````
-Add ``LD_LIBRARY_PATH`` with value as above as a environment variable to your run configuration of the main execution .py file.
 
-Run the following command from the terminal using the python.exe from your desired (conda) environment
+Run the following command to install mujoco-py
+
+(Hint: If the PyCharm terminal can not find the package -> run the command from the ubuntu terminal targeting the python.exe from your desired (conda) environment)
+
 ```
 pip install mujoco-py
 ````
 
+``pip install gym``
+
+
 # Run
+
+## Ubuntu with PyCharm
+Add ``LD_LIBRARY_PATH`` with value as above as a environment variable to your run configuration of the main execution .py file.
 
 # Custom environment for ball throwing
 
