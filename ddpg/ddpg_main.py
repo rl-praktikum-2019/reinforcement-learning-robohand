@@ -11,6 +11,7 @@ from ddpg.critic_network import CriticNetwork
 from utils.noise import OrnsteinUhlenbeckActionNoise
 from utils.replay_buffer import ReplayBuffer
 from wrappers.reward_wrappers import VelocityRewardWrapper
+from wrappers.gym_wrapper import ThrowEnvWrapper
 
 """ 
 Implementation of DDPG - Deep Deterministic Policy Gradient
@@ -58,8 +59,7 @@ def train(sess, env, args, actor, critic, actor_noise):
 
     for i in range(int(args['max_episodes'])):
         print("------------------------ Start episode number:", i)
-        obs = env.reset()
-        s = obs["observation"]
+        s = env.reset()
 
         ep_reward = 0
         ep_ave_max_q = 0
@@ -72,9 +72,7 @@ def train(sess, env, args, actor, critic, actor_noise):
 
             # Added exploration noise
             a = actor.predict(np.reshape(s, (1, actor.s_dim))) + actor_noise()
-            obs2, r, terminal, info = env.step(a[0])
-
-            s2 = obs2["observation"]
+            s2, r, terminal, info = env.step(a[0])
 
             replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), r,
                               terminal, np.reshape(s2, (actor.s_dim,)))
@@ -131,7 +129,7 @@ def train(sess, env, args, actor, critic, actor_noise):
 def main(args):
     with tf.Session() as sess:
 
-        env = VelocityRewardWrapper(gym.make(args['env']))
+        env = ThrowEnvWrapper(gym.make(args['env']))
         np.random.seed(int(args['random_seed']))
         tf.set_random_seed(int(args['random_seed']))
         env.seed(int(args['random_seed']))
