@@ -38,3 +38,12 @@ pip install mujoco-py
 ````
 
 # Run
+
+# Custom environment for ball throwing
+
+Extends the given HandEnv for gym by:
+
+- Removing the visible target goal/ball which was floating above the hand and obstructed a good view on hand and ball
+- Reduced mass of the ball in order to enable higher throws
+- Added a visible ground plane to give more depth to the scene
+- Changed reward in order to encourage ball throwing in vertical direction.
