@@ -38,7 +38,7 @@ Add your key text file as described in the email from mujoco under ``$HOME/.mujo
 Add your mujoco bin path to to end of your .bashrc via:
 ```
 nano ~/.bashrc
-then add: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/patrick/.mujoco/mujocoXXX/bin
+then add: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.mujoco/mujocoXXX/bin
 source ~/.bashrc
 ````
 
@@ -54,7 +54,7 @@ pip install gym
 # Run
 
 ## Ubuntu with PyCharm
-Add ``LD_LIBRARY_PATH`` with value as above as a environment variable to your run configuration of the main execution .py file.
+Add ``LD_LIBRARY_PATH`` with value ``$HOME/.mujoco/mujocoXXX/bin`` as above as a environment variable to your run configuration of the main execution .py file.
 
 # Custom environment for ball throwing
 
