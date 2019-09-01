@@ -45,10 +45,8 @@ Run the following command to install mujoco-py
 
 ```
 pip install mujoco-py
+pip install gym
 ````
-
-``pip install gym``
-
 
 # Run
 
