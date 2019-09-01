@@ -4,7 +4,9 @@
 ### Important Documentations
 
 https://openai.github.io/mujoco-py/build/html/index.html (API of Physics Simulation)
+
 http://www.mujoco.org/book/XMLreference.html (XML Reference - How to design a simulation environment via XML)
+
 https://github.com/openai/gym/tree/master/gym/wrappers (Gym Wrapper to extend gym code functionality)
 
 # Installation
