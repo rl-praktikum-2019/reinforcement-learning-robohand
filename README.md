@@ -35,9 +35,10 @@ Unzip to ``$HOME/.mujoco/mjpro1XXX/`` where XXX is the version number f.e. 200 f
 
 Add your key text file as described in the email from mujoco under ``$HOME/.mujoco/``.
 
-Add your mujoco bin path (export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/patrick/.mujoco/mujocoXXX/bin) to to end of your .bashrc via:
+Add your mujoco bin path to to end of your .bashrc via:
 ```
 nano ~/.bashrc
+then add: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/patrick/.mujoco/mujocoXXX/bin
 source ~/.bashrc
 ````
 
