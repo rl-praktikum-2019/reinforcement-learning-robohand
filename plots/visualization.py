@@ -14,7 +14,7 @@ Q_LEARNER_RESULTS_PATH= DATA_PATH+'/q_learner_20_results.json'
 
 def plot_cum_reward(cum_reward):
     plt.figure(figsize=(15,15))
-    plt.title("Crawling robot - Cumulative Reward")
+    plt.title("Cumulative Reward - Plot")
     plt.xlabel("Steps")
     plt.ylabel("cumulative reward")
     for i, row in cum_reward.iterrows():
@@ -24,7 +24,7 @@ def plot_cum_reward(cum_reward):
 
 def plot_reward(step_reward):
     plt.figure(figsize=(15,15))
-    plt.title("Crawling robot - Rewards per step")
+    plt.title("Rewards per step - Plot")
     plt.xlabel("Steps")
     plt.ylabel("Average reward per step")
     for i, row in step_reward.iterrows():
@@ -54,24 +54,13 @@ def append_experiment(step_reward_box, configuration: str, step_rewards):
     return step_reward_box
 
 def results_preprocessing(data):
-    data=data.sort_values(by=['configuration'])
-    data=data[['configuration','step_reward','cum_reward']]
     pd.set_option('display.max_rows', 500)
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.width', 1000)
     print(data.head())
     return data
 
-def random_robby_plot(configuration,rewards,cum_rewards):
-    learner_name='random_robby'
-    print('Hello random Robby!')
-    data = pd.DataFrame(
-    {'configuration': [configuration,],
-     'step_reward': [rewards,],
-     'cum_reward': [cum_rewards,]
-    })
-    print(data)
-
+def plot_everything(learner_name, data):
     cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
     cum_reward_plot.savefig(CUM_REWARD_PLOT_PATH+learner_name+PNG)
 
@@ -86,10 +75,18 @@ def random_robby_plot(configuration,rewards,cum_rewards):
         step_reward_box=append_experiment(step_reward_box, row['configuration'],row['step_reward'])
     box_plot=boxplot(step_reward_box)
     box_plot.savefig(BOXPLOT_PATH+learner_name+PNG)
-    return 0
+
+def random_robby_plot(configuration,rewards,cum_rewards):
+    print('Hello random Robby!')
+    data = pd.DataFrame(
+    {'configuration': [configuration,],
+     'step_reward': [rewards,],
+     'cum_reward': [cum_rewards,]
+    })
+    print(data)
+    plot_everything('random_robby', data)
 
 def crawling_robot_plots():
-    learner_name='q_learner_20'
     q_results= pd.read_json(Q_LEARNER_RESULTS_PATH)
     data = pd.io.json.json_normalize(q_results.results)
 
@@ -98,22 +95,10 @@ def crawling_robot_plots():
     data['configuration']= data.apply(lambda x: str(x['num_experiments'])+'_'+str(x['steps_per_episode'])
             +'_'+str(round(x['alpha'],2))+'_'+str(round(x['epsilon'],2))+'_'+
             str(round(x['gamma'],2)), axis=1)
+    data=data.sort_values(by=['configuration'])
+    data=data[['configuration','step_reward','cum_reward']]
     data = results_preprocessing(data)
-
-    cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
-    cum_reward_plot.savefig(CUM_REWARD_PLOT_PATH+learner_name+PNG)
-
-    step_reward=data[['configuration','step_reward']]
-    reward_plot=plot_reward(step_reward)
-    reward_plot.savefig(REWARD_PLOT_PATH+learner_name+PNG)
-
-    col_names =  ['configuration', 'step_reward']
-    step_reward_box  = pd.DataFrame(columns = col_names)
-
-    for i, row in step_reward.iterrows():
-        step_reward_box=append_experiment(step_reward_box, row['configuration'],row['step_reward'])
-    box_plot=boxplot(step_reward_box)
-    box_plot.savefig(BOXPLOT_PATH+learner_name+PNG)
+    plot_everything('q_learner_20', data)
 
 #plot_rewards(["some"],[1,2],[1,0.5])
 
