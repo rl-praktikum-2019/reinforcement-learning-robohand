@@ -1,6 +1,17 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+DATA_PATH=os.environ['HOME']+'/git_tree/reinforcement-learning-2019/data'
+PLOT_PATH=DATA_PATH+'/plots/'
+print(os.getcwd())
+NUM_OF_EXPERIMENTS=20
+REWARD_PLOT_PATH=PLOT_PATH+'q_learning_plot_step_reward_'+str(NUM_OF_EXPERIMENTS)+'_line.png'
+CUM_REWARD_PLOT_PATH=PLOT_PATH+'q_learning_plot_cum_reward_'+str(NUM_OF_EXPERIMENTS)+'_line.png'
+BOXPLOT_PATH=PLOT_PATH+'q_learning_boxplot_step_reward_'+str(NUM_OF_EXPERIMENTS)+'_line.png'
+Q_LEARNER_RESULTS_PATH= pd.read_json(DATA_PATH+'/q_learner_'+str(NUM_OF_EXPERIMENTS)+'_experiments.json')
+
 
 def plot_rewards(configurations, index, rewards):
     return 0
@@ -13,8 +24,7 @@ def plot_cum_reward(cum_reward):
     for i, row in cum_reward.iterrows():
         plt.plot(row['cum_reward'],label=row['configuration'])
         plt.legend()
-    plt.show()
-    #plt.savefig(output_cum_reward)
+    plt.savefig(CUM_REWARD_PLOT_PATH)
 
 def plot_reward(step_reward):
     plt.figure(figsize=(15,15))
@@ -24,8 +34,7 @@ def plot_reward(step_reward):
     for i, row in step_reward.iterrows():
         plt.plot(row['step_reward'],label=row['configuration'])
         plt.legend()
-    plt.show()
-    #plt.savefig(output_step_reward)
+    plt.savefig(REWARD_PLOT_PATH)
 
 def boxplot(step_reward_box):
     plt.figure(figsize=(20,10))
@@ -40,8 +49,7 @@ def boxplot(step_reward_box):
                 data=step_reward_box,
                 color='black',
                 alpha=0.75)
-    plt.show()
-    #plt.savefig(boxplot_step_reward)
+    plt.savefig(BOXPLOT_PATH)
 
 def append_experiment(step_reward_box, configuration: str, step_rewards):
   for reward in step_rewards:
@@ -50,12 +58,7 @@ def append_experiment(step_reward_box, configuration: str, step_rewards):
     return step_reward_box
 
 def crawling_robot_plots():
-    number_of_experiments=20
-    output_step_reward='q_learning_plot_step_reward_'+str(number_of_experiments)+'_line.png'
-    output_cum_reward='q_learning_plot_cum_reward_'+str(number_of_experiments)+'_line.png'
-    boxplot_step_reward='q_learning_boxplot_step_reward_'+str(number_of_experiments)+'_line.png'
-    q_learner= pd.read_json('~/git_tree/uebung2-robotcontrol/output/q_learner_'+str(number_of_experiments)+'_experiments.json')
-    data = pd.io.json.json_normalize(q_learner.results)
+    data = pd.io.json.json_normalize(Q_LEARNER_RESULTS_PATH.results)
     data.sort_index()
     data = data.reindex(['num_experiments','steps_per_episode','alpha','epsilon','gamma','step_reward','cum_reward'], axis=1)
 
@@ -64,9 +67,9 @@ def crawling_robot_plots():
             str(round(x['gamma'],2)), axis=1)
     data=data.sort_values(by=['configuration'])
 
-    #plot_cum_reward(data[['configuration','cum_reward']])
+    plot_cum_reward(data[['configuration','cum_reward']])
     step_reward=data[['configuration','step_reward']]
-    #plot_reward(step_reward)
+    plot_reward(step_reward)
 
     col_names =  ['configuration', 'step_reward']
     step_reward_box  = pd.DataFrame(columns = col_names)
