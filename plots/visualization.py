@@ -57,10 +57,7 @@ def append_experiment(step_reward_box, configuration: str, step_rewards):
     step_reward_box.loc[len(step_reward_box)] = row
     return step_reward_box
 
-def crawling_robot_plots():
-    learner_name='q_learner_20'
-    q_results= pd.read_json(Q_LEARNER_RESULTS_PATH)
-    data = pd.io.json.json_normalize(q_results.results)
+def results_preprocessing(data):
     data.sort_index()
     data = data.reindex(['num_experiments','steps_per_episode','alpha','epsilon','gamma','step_reward','cum_reward'], axis=1)
 
@@ -68,6 +65,17 @@ def crawling_robot_plots():
             +'_'+str(round(x['alpha'],2))+'_'+str(round(x['epsilon'],2))+'_'+
             str(round(x['gamma'],2)), axis=1)
     data=data.sort_values(by=['configuration'])
+    pd.set_option('display.max_rows', 500)
+    pd.set_option('display.max_columns', 500)
+    pd.set_option('display.width', 1000)
+    print(data)
+    return data
+
+def crawling_robot_plots():
+    learner_name='q_learner_20'
+    q_results= pd.read_json(Q_LEARNER_RESULTS_PATH)
+    data = pd.io.json.json_normalize(q_results.results)
+    data = results_preprocessing(data)
 
     cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
     cum_reward_plot.savefig(CUM_REWARD_PLOT_PATH+learner_name+PNG)
