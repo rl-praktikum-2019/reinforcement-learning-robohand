@@ -3,10 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-DATA_PATH=os.environ['HOME']+'/git_tree/reinforcement-learning-2019/data'
+DATA_PATH=os.path.dirname(os.path.realpath(__file__))+'/../data'
 PLOT_PATH=DATA_PATH+'/plots/'
 PNG='.png'
-print(os.getcwd())
 REWARD_PLOT_PATH=PLOT_PATH+'reward_'
 CUM_REWARD_PLOT_PATH=PLOT_PATH+'cum_reward_'
 BOXPLOT_PATH=PLOT_PATH+'boxplot_reward_'
