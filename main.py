@@ -1,11 +1,11 @@
 import numpy as np
 import gym
 import time
-from plots.visualization import random_robby_plot
+from plots.visualization import random_robby_plot, update_plot
 
 episodes = 2
-episode_length = 20
-
+episode_length = 2500
+PLOT_FREQUENCY=200
 
 def policy(observation, desired_goal):
     # Here you would implement your smarter policy. In this case,
@@ -27,10 +27,13 @@ rewards=[]
 cum_rewards=[]
 substitute_rewards=[]
 
+plot=random_robby_plot('random_'+str(episode_length), rewards, cum_rewards)
+
 for j in range(episode_length):
     action = policy(obs['observation'], obs['desired_goal'])
-    print("Ball [X,Y,Z]", get_ball_data(env))
+    #print("Ball [X,Y,Z]", get_ball_data(env))
     obs, reward, done, info = env.step(action)
+    reward=get_ball_data(env)[1]
     rewards.append(reward)
     if j==0: 
         cum_rewards.append(reward)
@@ -43,8 +46,16 @@ for j in range(episode_length):
     substitute_reward = env.compute_reward(obs['achieved_goal'], substitute_goal, info)
     substitute_rewards.append(substitute_reward)
     #print('reward is {}, substitute_reward is {}'.format(reward, substitute_reward))
-    print(info)
+    #print(info)
     env.render()
+    #plot=random_robby_plot('random_'+str(episode_length), rewards, cum_rewards)
+
+    if j % PLOT_FREQUENCY:
+        print('Is mod 200!')
+        #update_plot(plot)
+        #plot=random_robby_plot('random_'+str(episode_length), rewards, cum_rewards)
+
+
 print('Rewards:',rewards) 
 print('Cum. Rewards: ',cum_rewards) 
 print('Sub. Rewards:',substitute_rewards)

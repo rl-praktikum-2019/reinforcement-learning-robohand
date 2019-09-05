@@ -1,4 +1,4 @@
-import os
+import os,time
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -11,6 +11,13 @@ CUM_REWARD_PLOT_PATH=PLOT_PATH+'cum_reward_'
 BOXPLOT_PATH=PLOT_PATH+'boxplot_reward_'
 Q_LEARNER_RESULTS_PATH= DATA_PATH+'/q_learner_20_results.json'
 
+plt.ion()
+#plt.figure(figsize=(20, 10))
+
+def close():
+    ## disable interactive plotting => otherwise window terminates
+    plt.ioff()
+    plt.show()
 
 def plot_cum_reward(cum_reward):
     plt.figure(figsize=(15,15))
@@ -60,8 +67,20 @@ def results_preprocessing(data):
     print(data.head())
     return data
 
+def update_plot(plot):
+    plot.show()
+    #plot.pause(1e-17)
+    #time.sleep(0.1)
+
+def plot_dynamic(learner_name, data):
+    cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
+    cum_reward_plot.show()
+    return cum_reward_plot
+    #cum_reward_plot.savefig(CUM_REWARD_PLOT_PATH+learner_name+PNG)
+
 def plot_everything(learner_name, data):
     cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
+    #cum_reward_plot.show()
     cum_reward_plot.savefig(CUM_REWARD_PLOT_PATH+learner_name+PNG)
 
     step_reward=data[['configuration','step_reward']]
@@ -77,14 +96,15 @@ def plot_everything(learner_name, data):
     box_plot.savefig(BOXPLOT_PATH+learner_name+PNG)
 
 def random_robby_plot(configuration,rewards,cum_rewards):
-    print('Hello random Robby!')
     data = pd.DataFrame(
     {'configuration': [configuration,],
      'step_reward': [rewards,],
      'cum_reward': [cum_rewards,]
     })
     print(data)
-    plot_everything('random_robby', data)
+    cum_reward_plot=plot_dynamic('random_robby', data)
+    #plot_everything('random_robby', data)
+    return cum_reward_plot
 
 def crawling_robot_plots():
     q_results= pd.read_json(Q_LEARNER_RESULTS_PATH)
