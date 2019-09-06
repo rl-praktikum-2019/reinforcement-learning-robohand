@@ -3,6 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# TODO: Improve naming schema
+# TODO: Integrate visualization to ddpg_main.py & others.
+# XXX: Do we want to show several plots live?
+# XXX: Do we need multiple lines and labels for update_plot()? 
+#       A: I think not since multiple lines are only for presentation &
+#       update_plot() is a live demo method.
+
 DATA_PATH=os.path.dirname(os.path.realpath(__file__))+'/../data'
 PLOT_PATH=DATA_PATH+'/plots/'
 PNG='.png'
@@ -14,11 +21,14 @@ Q_LEARNER_RESULTS_PATH= DATA_PATH+'/q_learner_20_results.json'
 plt.ion()
 #plt.figure(figsize=(20, 10))
 
+# TODO: This method is not being used.
 def close():
     ## disable interactive plotting => otherwise window terminates
     plt.ioff()
     plt.show()
 
+# TODO: Add labels to ax in update_plot() plots
+# TODO: Test if update_plot() also works for boxplot
 def update_plot(plot, label, data):
     ax1 = plt.gca()
     ax1.clear()

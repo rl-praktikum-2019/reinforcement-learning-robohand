@@ -50,7 +50,6 @@ for j in range(episode_length):
     env.render()
 
     if j % PLOT_FREQUENCY:
-        print('Is mod 200!')
         update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
 
 
