@@ -1,3 +1,4 @@
+import os
 import tensorflow as tf
 import tflearn
 import numpy as np
@@ -23,6 +24,7 @@ The algorithm is tested on the Pendulum-v0 OpenAI gym task
 and developed with tflearn + Tensorflow
 Author: Patrick Emami
 """
+RESULTS_PATH=os.path.dirname(os.path.realpath(__file__))+'/../data/'
 
 
 def build_summaries():
@@ -186,8 +188,8 @@ if __name__ == '__main__':
     parser.add_argument('--max-episode-len', help='max length of 1 episode', default=1000)
     parser.add_argument('--render-env', help='render the gym env', action='store_true')
     parser.add_argument('--use-gym-monitor', help='record gym results', action='store_true')
-    parser.add_argument('--monitor-dir', help='directory for storing gym results', default='./results/gym_ddpg')
-    parser.add_argument('--summary-dir', help='directory for storing tensorboard info', default='./results/tf_ddpg')
+    parser.add_argument('--monitor-dir', help='directory for storing gym results', default=RESULTS_PATH+'./ddpg_results/gym_ddpg')
+    parser.add_argument('--summary-dir', help='directory for storing tensorboard info', default=RESULTS_PATH+'./ddpg_results/tf_ddpg')
 
     parser.set_defaults(render_env=False)
     parser.set_defaults(use_gym_monitor=False)
