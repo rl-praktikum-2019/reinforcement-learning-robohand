@@ -29,11 +29,15 @@ def close():
 
 # TODO: Add labels to ax in update_plot() plots
 # TODO: Test if update_plot() also works for boxplot
-def update_plot(plot, label, data):
+# FIXME: X axis does not show the number of steps correctly
+def update_plot(plt, label, data):
     ax1 = plt.gca()
     ax1.clear()
+    plt.title(plt.title)
+    plt.xlabel("Steps")
+    plt.ylabel("Average reward per step")
     ax1.plot(data,label=label)
-    plot.show()
+    plt.show()
 
 def results_preprocessing(configuration, rewards, cum_rewards):
     data = pd.DataFrame(
