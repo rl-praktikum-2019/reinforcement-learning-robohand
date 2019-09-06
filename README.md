@@ -13,8 +13,8 @@ https://github.com/openai/gym/tree/master/gym/wrappers (Gym Wrapper to extend gy
 
 ## Installation for Macbook
 ```
-conda create mujoco_venv python=3.6 anaconda
-conda activate mujoco_venv
+conda create reinforcement_learning_venv python=3.6
+conda activate reinforcement_learning_venv
 
 pip install gym
 
@@ -26,7 +26,24 @@ export CC=/usr/local/Cellar/gcc/9.1.0/bin/gcc-9
 
 pip install -U 'mujoco-py<2.1,>=2.0'
 ````
+### Environment variables for conda env
+```
+cd $CONDA_PREFIX
+mkdir -p ./etc/conda/activate.d
+mkdir -p ./etc/conda/deactivate.d
+touch ./etc/conda/activate.d/env_vars.sh
+touch ./etc/conda/deactivate.d/env_vars.sh
+````
+Add following exports to $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh:
+```
+export LD_LIBRARY_PATH=/Users/studyingam//.mujoco
+export PYTHONPATH="$PYTHONPATH:/Users/studyingam/git_tree/reinforcement-learning-2019"
+````
+
+
+
 ## Installation on Ubuntu
+
 Get your mujoco license here by following the listed steps: https://www.roboti.us/license.html
 
 Download your desired MuJoCo binaries (not HAPTIX or Plugins) https://www.roboti.us/index.html
@@ -68,3 +85,7 @@ Extends the given HandEnv for gym by:
 - Reduced mass of the ball in order to enable higher throws
 - Added a visible ground plane to give more depth to the scene
 - Changed reward in order to encourage ball throwing in vertical direction.
+
+## Run commands: 
+
+- For ddpg: 'python ddpg/ddpg_main.py --render-env --env=ThrowBall-v0'
