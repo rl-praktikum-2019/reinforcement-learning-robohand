@@ -58,6 +58,10 @@ Add ``LD_LIBRARY_PATH`` with value ``$HOME/.mujoco/mujocoXXX/bin`` as above as a
 
 # Custom environment for ball throwing
 
+Install custom environment via: 
+
+``pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment``
+
 Extends the given HandEnv for gym by:
 
 - Removing the visible target goal/ball which was floating above the hand and obstructed a good view on hand and ball
