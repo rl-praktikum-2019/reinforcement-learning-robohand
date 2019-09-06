@@ -10,6 +10,7 @@ from ddpg.actor_network import ActorNetwork
 from ddpg.critic_network import CriticNetwork
 from utils.noise import OrnsteinUhlenbeckActionNoise
 from utils.replay_buffer import ReplayBuffer
+from wrappers.observation_wrapper import ObservationWrapper
 from wrappers.reward_wrappers import VelocityRewardWrapper
 from wrappers.gym_wrapper import ThrowEnvWrapper
 
@@ -129,7 +130,7 @@ def train(sess, env, args, actor, critic, actor_noise):
 def main(args):
     with tf.Session() as sess:
 
-        env = ThrowEnvWrapper(gym.make(args['env']))
+        env = ObservationWrapper(gym.make(args['env'], reward_type='dense'))
         np.random.seed(int(args['random_seed']))
         tf.set_random_seed(int(args['random_seed']))
         env.seed(int(args['random_seed']))

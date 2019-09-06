@@ -2,6 +2,7 @@ import gym
 import numpy as np
 
 BALL_OBJECT_NAME = "object"
+BALL_JOINT_NAME = "object:joint"
 
 
 class ThrowEnvWrapper(gym.Wrapper):
@@ -20,23 +21,32 @@ class ThrowEnvWrapper(gym.Wrapper):
 
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
+
+        object_qpos = self.sim.data.get_joint_qpos('object:joint')
+        if object_qpos[2] <= 0.03:
+            print("Ball was droppped. Reset")
+            done = True
+
         return observation["observation"], self.reward(reward), done, info
 
     def reward(self, reward):
-        _, positional_velocity, _ = self.get_ball_data()
-        delta_vel = self.desired_ball_velocity - positional_velocity
-        d_vel = np.linalg.norm(delta_vel, axis=-1)
-        vel_reward = (10. * d_vel)
-        print("Velocity reward:", -vel_reward)
-        reward += -vel_reward
 
+
+        object_qpos = self.sim.data.get_joint_qpos('object:joint')
+
+        if object_qpos[2] <= 0.03:
+            print("Ball was droppped: -20 reward")
+            return -20
+        print(reward)
         return reward
 
     def get_ball_data(self):
         # Positional velocity
         x_pos = self.env.env.sim.data.get_body_xpos(BALL_OBJECT_NAME)
+
         # Positional velocity
         x_velp = self.env.env.sim.data.get_body_xvelp(BALL_OBJECT_NAME)
+
         # Rotational velocity
         x_velr = self.env.env.sim.data.get_body_xvelr(BALL_OBJECT_NAME)
         return x_pos, x_velp, x_velr

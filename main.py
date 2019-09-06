@@ -2,15 +2,9 @@ import numpy as np
 import gym
 import time
 from plots.visualization import random_robby_plot
-
-episodes = 2
-episode_length = 20
-
-
-def policy(observation, desired_goal):
-    # Here you would implement your smarter policy. In this case,
-    # we just sample random actions.
-    return env.action_space.sample()
+from wrappers.gym_wrapper import ThrowEnvWrapper
+episodes = 50
+episode_length = 200
 
 
 def get_ball_data(env):
@@ -20,33 +14,31 @@ def get_ball_data(env):
     return x_pos, x_velp, x_velr
 
 
-env = gym.make("HandManipulateEgg-v0")
+env = ThrowEnvWrapper(gym.make("HandManipulateEgg-v0"))
 
-obs = env.reset()
-rewards=[]
-cum_rewards=[]
-substitute_rewards=[]
+for i in range(episodes):
 
-for j in range(episode_length):
-    action = policy(obs['observation'], obs['desired_goal'])
-    print("Ball [X,Y,Z]", get_ball_data(env))
-    obs, reward, done, info = env.step(action)
-    rewards.append(reward)
-    if j==0: 
-        cum_rewards.append(reward)
-    else:
-        cum_rewards.append(cum_rewards[j-1]+reward)
-    # If we want, we can substitute a goal here and re-compute
-    # the reward. For instance, we can just pretend that the desired
-    # goal was what we achieved all along.
-    substitute_goal = obs['achieved_goal'].copy()
-    substitute_reward = env.compute_reward(obs['achieved_goal'], substitute_goal, info)
-    substitute_rewards.append(substitute_reward)
-    #print('reward is {}, substitute_reward is {}'.format(reward, substitute_reward))
-    print(info)
-    env.render()
-print('Rewards:',rewards) 
-print('Cum. Rewards: ',cum_rewards) 
-print('Sub. Rewards:',substitute_rewards)
-random_robby_plot('random_'+str(episode_length), rewards, cum_rewards)
+    obs = env.reset()
+    rewards=[]
+    cum_rewards=[]
+    substitute_rewards=[]
+
+    for j in range(episode_length):
+        action = env.action_space.sample()
+        obs, reward, done, info = env.step(action)
+        rewards.append(reward)
+        if j==0:
+            cum_rewards.append(reward)
+        else:
+            cum_rewards.append(cum_rewards[j-1]+reward)
+        env.render()
+
+        if done:
+            break
+
+    print('Rewards:',rewards)
+    print('Cum. Rewards: ',cum_rewards)
+    print('Sub. Rewards:',substitute_rewards)
+    random_robby_plot('random_'+str(episode_length), rewards, cum_rewards)
+
 env.close()
