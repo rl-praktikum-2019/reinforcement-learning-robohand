@@ -19,6 +19,12 @@ def close():
     plt.ioff()
     plt.show()
 
+def update_plot(plot, label, data):
+    ax1 = plt.gca()
+    ax1.clear()
+    ax1.plot(data,label=label)
+    plot.show()
+
 def results_preprocessing(configuration, rewards, cum_rewards):
     data = pd.DataFrame(
     {'configuration': [configuration,],
@@ -28,20 +34,8 @@ def results_preprocessing(configuration, rewards, cum_rewards):
     print(data)
     return data
 
-def update_plot(plot, configuration, rewards, cum_rewards):
-    data = results_preprocessing(configuration, rewards, cum_rewards)
-    ax1 = plt.gca()
-    ax1.clear()
-    ax1.plot(cum_rewards,label=configuration)
-    plot.show()
-
-    #plot.set_ydata(data[0]['cum_reward'])
-    #plot.show()
-    #plot.pause(1e-17)
-    #time.sleep(0.1)
-
 def plot_cum_reward(cum_reward):
-    fig=plt.figure(figsize=(15,15))
+    fig=plt.figure()
     plt.title("Cumulative Reward - Plot")
     plt.xlabel("Steps")
     plt.ylabel("cumulative reward")
@@ -84,13 +78,12 @@ def append_experiment(step_reward_box, configuration: str, step_rewards):
 
 def plot_dynamic(learner_name, data):
     cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
-    cum_reward_plot.show()
-    return cum_reward_plot
+    #cum_reward_plot.show()
     #cum_reward_plot.savefig(CUM_REWARD_PLOT_PATH+learner_name+PNG)
+    return cum_reward_plot
 
 def plot_everything(learner_name, data):
     cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
-    #cum_reward_plot.show()
     cum_reward_plot.savefig(CUM_REWARD_PLOT_PATH+learner_name+PNG)
 
     step_reward=data[['configuration','step_reward']]
@@ -105,7 +98,7 @@ def plot_everything(learner_name, data):
     box_plot=boxplot(step_reward_box)
     box_plot.savefig(BOXPLOT_PATH+learner_name+PNG)
 
-def random_robby_plot(configuration,rewards,cum_rewards):
+def random_robby_plots(configuration,rewards,cum_rewards):
     data = results_preprocessing(configuration, rewards, cum_rewards)
     cum_reward_plot=plot_dynamic('random_robby', data)
     #plot_everything('random_robby', data)
