@@ -52,8 +52,8 @@ for j in range(episode_length):
 
     if j % PLOT_FREQUENCY:
         print('Is mod 200!')
-        #update_plot(plot)
-        plot=random_robby_plot('random_'+str(episode_length), rewards, cum_rewards)
+        update_plot(plot,'random_'+str(episode_length), rewards, cum_rewards)
+        #plot=random_robby_plot('random_'+str(episode_length), rewards, cum_rewards)
 
 
 print('Rewards:',rewards) 

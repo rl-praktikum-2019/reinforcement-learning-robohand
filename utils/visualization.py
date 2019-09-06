@@ -19,13 +19,35 @@ def close():
     plt.ioff()
     plt.show()
 
+def results_preprocessing(configuration, rewards, cum_rewards):
+    data = pd.DataFrame(
+    {'configuration': [configuration,],
+     'step_reward': [rewards,],
+     'cum_reward': [cum_rewards,]
+    })
+    print(data)
+    return data
+
+def update_plot(plot, configuration, rewards, cum_rewards):
+    data = results_preprocessing(configuration, rewards, cum_rewards)
+    ax1 = plt.gca()
+    ax1.clear()
+    ax1.plot(cum_rewards,label=configuration)
+    plot.show()
+
+    #plot.set_ydata(data[0]['cum_reward'])
+    #plot.show()
+    #plot.pause(1e-17)
+    #time.sleep(0.1)
+
 def plot_cum_reward(cum_reward):
-    plt.figure(figsize=(15,15))
+    fig=plt.figure(figsize=(15,15))
     plt.title("Cumulative Reward - Plot")
     plt.xlabel("Steps")
     plt.ylabel("cumulative reward")
+    ax1 = fig.add_subplot(1,1,1)
     for i, row in cum_reward.iterrows():
-        plt.plot(row['cum_reward'],label=row['configuration'])
+        ax1.plot(row['cum_reward'],label=row['configuration'])
         plt.legend()
     return plt
 
@@ -60,18 +82,6 @@ def append_experiment(step_reward_box, configuration: str, step_rewards):
     step_reward_box.loc[len(step_reward_box)] = row
     return step_reward_box
 
-def results_preprocessing(data):
-    pd.set_option('display.max_rows', 500)
-    pd.set_option('display.max_columns', 500)
-    pd.set_option('display.width', 1000)
-    print(data.head())
-    return data
-
-def update_plot(plot):
-    plot.show()
-    #plot.pause(1e-17)
-    #time.sleep(0.1)
-
 def plot_dynamic(learner_name, data):
     cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
     cum_reward_plot.show()
@@ -96,12 +106,7 @@ def plot_everything(learner_name, data):
     box_plot.savefig(BOXPLOT_PATH+learner_name+PNG)
 
 def random_robby_plot(configuration,rewards,cum_rewards):
-    data = pd.DataFrame(
-    {'configuration': [configuration,],
-     'step_reward': [rewards,],
-     'cum_reward': [cum_rewards,]
-    })
-    print(data)
+    data = results_preprocessing(configuration, rewards, cum_rewards)
     cum_reward_plot=plot_dynamic('random_robby', data)
     #plot_everything('random_robby', data)
     return cum_reward_plot
