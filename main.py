@@ -1,7 +1,7 @@
 import numpy as np
 import gym
 import time
-from plots.visualization import random_robby_plot, update_plot
+from utils.visualization import random_robby_plot, update_plot
 
 episodes = 2
 episode_length = 2500
@@ -53,7 +53,7 @@ for j in range(episode_length):
     if j % PLOT_FREQUENCY:
         print('Is mod 200!')
         #update_plot(plot)
-        #plot=random_robby_plot('random_'+str(episode_length), rewards, cum_rewards)
+        plot=random_robby_plot('random_'+str(episode_length), rewards, cum_rewards)
 
 
 print('Rewards:',rewards) 
