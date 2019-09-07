@@ -3,6 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# TODO: Improve naming schema
+# TODO: Integrate visualization to ddpg_main.py & others.
+# XXX: Do we want to show several plots live?
+# XXX: Do we need multiple lines and labels for update_plot()? 
+#       A: I think not since multiple lines are only for presentation &
+#       update_plot() is a live demo method.
+
 DATA_PATH=os.path.dirname(os.path.realpath(__file__))+'/../data'
 PLOT_PATH=DATA_PATH+'/plots/'
 PNG='.png'
@@ -14,18 +21,41 @@ Q_LEARNER_RESULTS_PATH= DATA_PATH+'/q_learner_20_results.json'
 plt.ion()
 #plt.figure(figsize=(20, 10))
 
+# TODO: This method is not being used.
 def close():
     ## disable interactive plotting => otherwise window terminates
     plt.ioff()
     plt.show()
 
+# TODO: Add labels to ax in update_plot() plots
+# TODO: Test if update_plot() also works for boxplot
+# FIXME: X axis does not show the number of steps correctly
+def update_plot(plt, label, data):
+    ax1 = plt.gca()
+    ax1.clear()
+    plt.title(plt.title)
+    plt.xlabel("Steps")
+    plt.ylabel("Average reward per step")
+    ax1.plot(data,label=label)
+    plt.show()
+
+def results_preprocessing(configuration, rewards, cum_rewards):
+    data = pd.DataFrame(
+    {'configuration': [configuration,],
+     'step_reward': [rewards,],
+     'cum_reward': [cum_rewards,]
+    })
+    print(data)
+    return data
+
 def plot_cum_reward(cum_reward):
-    plt.figure(figsize=(15,15))
+    fig=plt.figure()
     plt.title("Cumulative Reward - Plot")
     plt.xlabel("Steps")
     plt.ylabel("cumulative reward")
+    ax1 = fig.add_subplot(1,1,1)
     for i, row in cum_reward.iterrows():
-        plt.plot(row['cum_reward'],label=row['configuration'])
+        ax1.plot(row['cum_reward'],label=row['configuration'])
         plt.legend()
     return plt
 
@@ -60,27 +90,14 @@ def append_experiment(step_reward_box, configuration: str, step_rewards):
     step_reward_box.loc[len(step_reward_box)] = row
     return step_reward_box
 
-def results_preprocessing(data):
-    pd.set_option('display.max_rows', 500)
-    pd.set_option('display.max_columns', 500)
-    pd.set_option('display.width', 1000)
-    print(data.head())
-    return data
-
-def update_plot(plot):
-    plot.show()
-    #plot.pause(1e-17)
-    #time.sleep(0.1)
-
 def plot_dynamic(learner_name, data):
     cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
-    cum_reward_plot.show()
-    return cum_reward_plot
+    #cum_reward_plot.show()
     #cum_reward_plot.savefig(CUM_REWARD_PLOT_PATH+learner_name+PNG)
+    return cum_reward_plot
 
 def plot_everything(learner_name, data):
     cum_reward_plot=plot_cum_reward(data[['configuration','cum_reward']])
-    #cum_reward_plot.show()
     cum_reward_plot.savefig(CUM_REWARD_PLOT_PATH+learner_name+PNG)
 
     step_reward=data[['configuration','step_reward']]
@@ -95,13 +112,8 @@ def plot_everything(learner_name, data):
     box_plot=boxplot(step_reward_box)
     box_plot.savefig(BOXPLOT_PATH+learner_name+PNG)
 
-def random_robby_plot(configuration,rewards,cum_rewards):
-    data = pd.DataFrame(
-    {'configuration': [configuration,],
-     'step_reward': [rewards,],
-     'cum_reward': [cum_rewards,]
-    })
-    print(data)
+def random_robby_plots(configuration,rewards,cum_rewards):
+    data = results_preprocessing(configuration, rewards, cum_rewards)
     cum_reward_plot=plot_dynamic('random_robby', data)
     #plot_everything('random_robby', data)
     return cum_reward_plot

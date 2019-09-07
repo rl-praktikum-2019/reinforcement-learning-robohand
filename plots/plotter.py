@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
 
+# TODO: Delete this file when its knowledge is no longer needed. 
+
 def initialize():
     ## interactive plotting on (no need to close window for next iteration)
     plt.ion()
