@@ -1,6 +1,8 @@
 import gym
 import numpy as np
 
+BALL_RADIUS = 0.03
+
 BALL_OBJECT_NAME = "object"
 BALL_JOINT_NAME = "object:joint"
 
@@ -22,19 +24,16 @@ class ThrowEnvWrapper(gym.Wrapper):
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
 
-        object_qpos = self.sim.data.get_joint_qpos('object:joint')
-        if object_qpos[2] <= 0.03:
+        ball_center_z = self.sim.data.get_joint_qpos('object:joint')[2]
+        if ball_center_z <= BALL_RADIUS:
             print("Ball was droppped. Reset")
             done = True
 
         return observation["observation"], self.reward(reward), done, info
 
     def reward(self, reward):
-
-
-        object_qpos = self.sim.data.get_joint_qpos('object:joint')
-
-        if object_qpos[2] <= 0.03:
+        ball_center_z = self.sim.data.get_joint_qpos('object:joint')[2]
+        if ball_center_z <= BALL_RADIUS:
             print("Ball was droppped: -20 reward")
             return -20
         print(reward)

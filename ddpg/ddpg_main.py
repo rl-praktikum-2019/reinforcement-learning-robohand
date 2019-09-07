@@ -80,8 +80,7 @@ def train(sess, env, args, actor, critic, actor_noise):
             replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), r,
                               terminal, np.reshape(s2, (actor.s_dim,)))
 
-            # Keep adding experience to the memory until
-            # there are at least minibatch size samples
+            # Keep adding experience to the memory until there are at least minibatch size samples
             if replay_buffer.size() > int(args['minibatch_size']):
                 s_batch, a_batch, r_batch, t_batch, s2_batch = \
                     replay_buffer.sample_batch(int(args['minibatch_size']))

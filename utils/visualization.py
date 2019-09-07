@@ -2,6 +2,7 @@ import os,time
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from time import sleep
 
 # TODO: Improve naming schema
 # TODO: Integrate visualization to ddpg_main.py & others.
@@ -38,6 +39,8 @@ def update_plot(plt, label, data):
     plt.ylabel("Average reward per step")
     ax1.plot(data,label=label)
     plt.show()
+    plt.pause(.001) # Prevents mujoco from blocking rendering
+
 
 def results_preprocessing(configuration, rewards, cum_rewards):
     data = pd.DataFrame(
