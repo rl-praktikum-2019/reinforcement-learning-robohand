@@ -1,7 +1,7 @@
 import numpy as np
 import gym
 import time
-from utils.plots import random_robby_plots, update_plot
+from utils.plots import init_cum_reward_plot, update_plot
 
 episodes = 2
 episode_length = 2500
@@ -27,7 +27,7 @@ rewards=[]
 cum_rewards=[]
 substitute_rewards=[]
 
-cum_plot = random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
+cum_plot = init_cum_reward_plot('random_'+str(episode_length), rewards, cum_rewards)
 
 for j in range(episode_length):
     action = policy(obs['observation'], obs['desired_goal'])
@@ -56,5 +56,5 @@ for j in range(episode_length):
 print('Rewards:',rewards) 
 print('Cum. Rewards: ',cum_rewards) 
 print('Sub. Rewards:',substitute_rewards)
-random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
+init_cum_reward_plot('random_'+str(episode_length), rewards, cum_rewards)
 env.close()

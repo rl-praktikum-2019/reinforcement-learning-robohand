@@ -15,7 +15,7 @@ from wrappers.observation_wrapper import ObservationWrapper
 from wrappers.reward_wrappers import VelocityRewardWrapper
 from wrappers.gym_wrapper import ThrowEnvWrapper
 import pydmps
-from utils.plots import random_robby_plots, update_plot
+from utils.plots import init_cum_reward_plot, update_plot
 
 """ 
 Implementation of DDPG - Deep Deterministic Policy Gradient
@@ -78,7 +78,7 @@ def train(sess, env, args, actor, critic, actor_noise):
     for i in range(int(args['max_episodes'])):
         rewards=[]
         cum_rewards=[]
-        #cum_plot = random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
+        #cum_plot = init_cum_reward_plot('random_'+str(episode_length), rewards, cum_rewards)
         print("------------------------ Start episode number:", i)
         s = env.reset()
 

@@ -115,7 +115,7 @@ def plot_everything(learner_name, data):
     box_plot=boxplot(step_reward_box)
     box_plot.savefig(BOXPLOT_PATH+learner_name+PNG)
 
-def random_robby_plots(configuration,rewards,cum_rewards):
+def init_cum_reward_plot(configuration,rewards,cum_rewards):
     data = results_preprocessing(configuration, rewards, cum_rewards)
     cum_reward_plot=plot_dynamic('random_robby', data)
     #plot_everything('random_robby', data)
