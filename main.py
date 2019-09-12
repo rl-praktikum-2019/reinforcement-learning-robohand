@@ -3,8 +3,12 @@ import pprint as pp
 import numpy as np
 import argparse
 import os
+# TODO: Remove redundancy
 from gym import wrappers
 import gym
+from ddpg.ddpg_main import main as run_ddpg_robby
+from dmp.dmp_main import main as run_dmp_robby
+from dmp.dmp_ddpg_main import main as run_dmp_ddpg_robby
 
 from wrappers.observation_wrapper import ObservationWrapper
 
@@ -18,15 +22,18 @@ def build_environment(random_seed, reward):
     return env
 
 def run_dmp_experiment(experiment_params):
-    print('dmp')
+    print('INFO: Running dmp Robby.')
+    run_dmp_robby(args)
 
 
 def run_dmp_ddpg_experiment(experiment_params):
-    print('dmp + ddpg')
+    print('INFO: Running dmp ddpg Robby.')
+    run_dmp_ddpg_robby(args)
 
 
-def run_ddpg_experiment(experiment_params):
-    print('ddpg')
+def run_ddpg_experiment(args):
+    print('INFO: Running ddpg Robby.')
+    run_ddpg_robby(args)
 
 def run_experiment():
     env=build_environment(random_seed, 'dense')
@@ -78,4 +85,7 @@ if __name__ == '__main__':
 
     pp.pprint(args)
 
-    main(args)
+    #main(args)
+    #run_dmp_ddpg_experiment(args)
+    #run_dmp_experiment(args)
+    run_ddpg_experiment(args)
