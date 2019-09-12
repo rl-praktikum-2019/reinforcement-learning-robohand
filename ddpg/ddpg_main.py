@@ -66,12 +66,12 @@ def train(sess, env, args, actor, critic, actor_noise):
     # in other environments.
     tflearn.is_training(True)
 
-    rewards=[]
-    cum_rewards=[]
     episode_length=int(args['max_episode_len'])
-    cum_plot = random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
 
     for i in range(int(args['max_episodes'])):
+        rewards=[]
+        cum_rewards=[]
+        cum_plot = random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
         print("------------------------ Start episode number:", i)
         s = env.reset()
 
