@@ -14,7 +14,7 @@ from utils.replay_buffer import ReplayBuffer
 from wrappers.observation_wrapper import ObservationWrapper
 from wrappers.reward_wrappers import VelocityRewardWrapper
 from wrappers.gym_wrapper import ThrowEnvWrapper
-from utils.visualization import random_robby_plots, update_plot
+from utils.plots import random_robby_plots, update_plot
 
 """ 
 Implementation of DDPG - Deep Deterministic Policy Gradient

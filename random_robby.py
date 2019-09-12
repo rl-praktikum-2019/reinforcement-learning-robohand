@@ -1,7 +1,7 @@
 import numpy as np
 import gym
 import time
-from utils.visualization import random_robby_plots, update_plot
+from utils.plots import random_robby_plots, update_plot
 
 episodes = 2
 episode_length = 2500
