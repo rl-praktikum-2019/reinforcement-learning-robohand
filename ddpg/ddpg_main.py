@@ -14,6 +14,7 @@ from utils.replay_buffer import ReplayBuffer
 from wrappers.observation_wrapper import ObservationWrapper
 from wrappers.reward_wrappers import VelocityRewardWrapper
 from wrappers.gym_wrapper import ThrowEnvWrapper
+from utils.visualization import random_robby_plots, update_plot
 
 """ 
 Implementation of DDPG - Deep Deterministic Policy Gradient
@@ -26,6 +27,7 @@ and developed with tflearn + Tensorflow
 Author: Patrick Emami
 """
 RESULTS_PATH=os.path.dirname(os.path.realpath(__file__))+'/../data/'
+PLOT_FREQUENCY=200
 
 
 def build_summaries():
@@ -59,6 +61,10 @@ def train(sess, env, args, actor, critic, actor_noise):
     # in other environments.
     tflearn.is_training(True)
 
+    rewards=[]
+    cum_rewards=[]
+    episode_length=int(args['max_episode_len'])
+    cum_plot = random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
 
     for i in range(int(args['max_episodes'])):
         print("------------------------ Start episode number:", i)
@@ -67,7 +73,7 @@ def train(sess, env, args, actor, critic, actor_noise):
         ep_reward = 0
         ep_ave_max_q = 0
 
-        for j in range(int(args['max_episode_len'])):
+        for j in range(episode_length):
             print("Start episode step:", j + 1)
 
             if args['render_env']:
@@ -75,9 +81,18 @@ def train(sess, env, args, actor, critic, actor_noise):
 
             # Added exploration noise
             a = actor.predict(np.reshape(s, (1, actor.s_dim))) + actor_noise()
-            s2, r, terminal, info = env.step(a[0])
+            s2, reward, terminal, info = env.step(a[0])
 
-            replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), r,
+            rewards.append(reward)
+            if j==0:
+                cum_rewards.append(reward)
+            else:
+                cum_rewards.append(cum_rewards[j-1]+reward)
+
+            if j % PLOT_FREQUENCY:
+                update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
+            
+            replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), reward,
                               terminal, np.reshape(s2, (actor.s_dim,)))
 
             # Keep adding experience to the memory until there are at least minibatch size samples
@@ -111,8 +126,8 @@ def train(sess, env, args, actor, critic, actor_noise):
 
             s = s2
 
-            if not math.isnan(r):
-                ep_reward += r
+            if not math.isnan(reward):
+                ep_reward += reward
 
             if terminal:
                 summary_str = sess.run(summary_ops, feed_dict={
