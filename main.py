@@ -1,60 +1,41 @@
-import numpy as np
-import gym
-import time
-from utils.visualization import random_robby_plots, update_plot
+import tensorflow as tf
+import pprint as pp
+import argparse
+import os
 
-episodes = 2
-episode_length = 2500
+RESULTS_PATH=os.path.dirname(os.path.realpath(__file__))+'/../data/'
 PLOT_FREQUENCY=200
 
-def policy(observation, desired_goal):
-    # Here you would implement your smarter policy. In this case,
-    # we just sample random actions.
-    return env.action_space.sample()
+def main(args):
+    with tf.Session() as sess:
+        print('Hello')
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='provide arguments for DDPG agent')
 
-def get_ball_data(env):
-    x_pos = env.env.sim.data.get_body_xpos("object")
-    x_velp = env.env.sim.data.get_body_xvelp("object")
-    x_velr = env.env.sim.data.get_body_xvelr("object")
-    return x_pos, x_velp, x_velr
+    # agent parameters
+    parser.add_argument('--actor-lr', help='actor network learning rate', default=0.0001)
+    parser.add_argument('--critic-lr', help='critic network learning rate', default=0.001)
+    parser.add_argument('--gamma', help='discount factor for critic updates', default=0.99)
+    parser.add_argument('--tau', help='soft target update parameter', default=0.001)
+    parser.add_argument('--buffer-size', help='max size of the replay buffer', default=1000000)
+    parser.add_argument('--minibatch-size', help='size of minibatch for minibatch-SGD', default=64)
 
+    # run parameters
+    parser.add_argument('--env', help='choose the gym env- tested on {Pendulum-v0}', default='Pendulum-v0')
+    parser.add_argument('--random-seed', help='random seed for repeatability', default=1234)
+    parser.add_argument('--max-episodes', help='max num of episodes to do while training', default=50000)
+    parser.add_argument('--max-episode-len', help='max length of 1 episode', default=1000)
+    parser.add_argument('--render-env', help='render the gym env', action='store_true')
+    parser.add_argument('--use-gym-monitor', help='record gym results', action='store_true')
+    parser.add_argument('--monitor-dir', help='directory for storing gym results', default=RESULTS_PATH+'./ddpg_results/gym_ddpg')
+    parser.add_argument('--summary-dir', help='directory for storing tensorboard info', default=RESULTS_PATH+'./ddpg_results/tf_ddpg')
 
-env = gym.make("HandManipulateEgg-v0")
+    parser.set_defaults(render_env=False)
+    parser.set_defaults(use_gym_monitor=False)
 
-obs = env.reset()
-rewards=[]
-cum_rewards=[]
-substitute_rewards=[]
+    args = vars(parser.parse_args())
 
-cum_plot = random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
+    pp.pprint(args)
 
-for j in range(episode_length):
-    action = policy(obs['observation'], obs['desired_goal'])
-    #print("Ball [X,Y,Z]", get_ball_data(env))
-    obs, reward, done, info = env.step(action)
-    reward=get_ball_data(env)[1]
-    rewards.append(reward)
-    if j==0:
-        cum_rewards.append(reward)
-    else:
-        cum_rewards.append(cum_rewards[j-1]+reward)
-    # If we want, we can substitute a goal here and re-compute
-    # the reward. For instance, we can just pretend that the desired
-    # goal was what we achieved all along.
-    substitute_goal = obs['achieved_goal'].copy()
-    substitute_reward = env.compute_reward(obs['achieved_goal'], substitute_goal, info)
-    substitute_rewards.append(substitute_reward)
-    #print('reward is {}, substitute_reward is {}'.format(reward, substitute_reward))
-    #print(info)
-    env.render()
-
-    if j % PLOT_FREQUENCY:
-        update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
-
-
-print('Rewards:',rewards) 
-print('Cum. Rewards: ',cum_rewards) 
-print('Sub. Rewards:',substitute_rewards)
-random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
-env.close()
+    main(args)
