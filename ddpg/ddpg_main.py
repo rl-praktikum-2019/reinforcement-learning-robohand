@@ -29,6 +29,11 @@ Author: Patrick Emami
 RESULTS_PATH=os.path.dirname(os.path.realpath(__file__))+'/../data/'
 PLOT_FREQUENCY=200
 
+def get_ball_data(env):
+    x_pos = env.env.sim.data.get_body_xpos("object")
+    x_velp = env.env.sim.data.get_body_xvelp("object")
+    x_velr = env.env.sim.data.get_body_xvelr("object")
+    return x_pos, x_velp, x_velr
 
 def build_summaries():
     episode_reward = tf.Variable(0.)
@@ -83,6 +88,7 @@ def train(sess, env, args, actor, critic, actor_noise):
             a = actor.predict(np.reshape(s, (1, actor.s_dim))) + actor_noise()
             s2, reward, terminal, info = env.step(a[0])
 
+            reward,_,_=get_ball_data(env)[2]
             rewards.append(reward)
             if j==0:
                 cum_rewards.append(reward)
@@ -91,7 +97,7 @@ def train(sess, env, args, actor, critic, actor_noise):
 
             if j % PLOT_FREQUENCY:
                 update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
-            
+
             replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), reward,
                               terminal, np.reshape(s2, (actor.s_dim,)))
 
