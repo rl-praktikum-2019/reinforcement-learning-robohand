@@ -1,15 +1,55 @@
 import tensorflow as tf
 import pprint as pp
+import numpy as np
 import argparse
 import os
+from gym import wrappers
+import gym
+
+from wrappers.observation_wrapper import ObservationWrapper
 
 RESULTS_PATH=os.path.dirname(os.path.realpath(__file__))+'/../data/'
 PLOT_FREQUENCY=200
 
-def main(args):
-    with tf.Session() as sess:
-        print('Hello')
+# TODO: take --env=HandManipulateEgg-v0 out of args 
+def build_environment(random_seed, reward):
+    env = ObservationWrapper(gym.make(args['env'], reward_type=reward))
+    env.seed(random_seed)
+    return env
 
+def run_dmp_experiment(experiment_params):
+    print('dmp')
+
+
+def run_dmp_ddpg_experiment(experiment_params):
+    print('dmp + ddpg')
+
+
+def run_ddpg_experiment(experiment_params):
+    print('ddpg')
+
+def run_experiment():
+    env=build_environment(random_seed, 'dense')
+    run_ddpg_experiment(env)
+
+def main(args):
+    random_seed=int(args['random_seed'])
+
+    with tf.Session() as sess:
+        env = build_environment(random_seed, 'dense')
+
+        np.random.seed(random_seed)
+        tf.set_random_seed(random_seed)
+
+       # Fetch environment state and action space properties
+        state_dim = env.observation_space["observation"].shape[0]
+        action_dim = env.action_space.shape[0]
+        action_bound = env.action_space.high
+
+        # Ensure action bound is symmetric
+        assert (all(env.action_space.high - env.action_space.low))
+
+# XXX: Parameters maybe to main?
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='provide arguments for DDPG agent')
 
