@@ -24,17 +24,21 @@ class ThrowEnvWrapper(gym.Wrapper):
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
 
-        ball_center_z = self.sim.data.get_joint_qpos('object:joint')[2]
+        ball_center_z = self.sim.data.get_joint_qpos(BALL_JOINT_NAME)[2]
         if ball_center_z <= BALL_RADIUS:
-            print("Ball was droppped. Reset")
+            print("Ball was dropped -> Reset Environment")
             done = True
 
         return observation["observation"], self.reward(reward), done, info
 
     def reward(self, reward):
-        ball_center_z = self.sim.data.get_joint_qpos('object:joint')[2]
+        ball_center_z = self.sim.data.get_joint_qpos(BALL_JOINT_NAME)[2]
+        ball_center_vel_z = self.sim.data.get_joint_qvel(BALL_JOINT_NAME)[2]
+        reward += ball_center_z * 10
+        reward += ball_center_vel_z * 20
+
         if ball_center_z <= BALL_RADIUS:
-            print("Ball was droppped: -20 reward")
+            print("Ball was dropped: -20 reward")
             return -20
         print(reward)
         return reward
