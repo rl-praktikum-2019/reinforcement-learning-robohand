@@ -18,7 +18,7 @@ REWARD_PLOT_PATH=PLOT_PATH+'reward_'
 CUM_REWARD_PLOT_PATH=PLOT_PATH+'cum_reward_'
 BOXPLOT_PATH=PLOT_PATH+'boxplot_reward_'
 Q_LEARNER_RESULTS_PATH= DATA_PATH+'/q_learner_20_results.json'
-
+PLOT_FREQUENCY=200
 plt.ion()
 #plt.figure(figsize=(20, 10))
 
@@ -34,9 +34,9 @@ def close():
 def update_plot(plt, label, data):
     ax1 = plt.gca()
     ax1.clear()
-    plt.title(plt.title)
+    plt.title('Cumulative Rewards ')
     plt.xlabel("Steps")
-    plt.ylabel("Average reward per step")
+    plt.ylabel("Cumulative reward per step")
     ax1.plot(data,label=label)
     plt.show()
     plt.pause(.001) # Prevents mujoco from blocking rendering
