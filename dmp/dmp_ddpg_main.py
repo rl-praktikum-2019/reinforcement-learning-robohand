@@ -78,7 +78,7 @@ def train(sess, env, args, actor, critic, actor_noise):
     for i in range(int(args['max_episodes'])):
         rewards=[]
         cum_rewards=[]
-        cum_plot = random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
+        #cum_plot = random_robby_plots('random_'+str(episode_length), rewards, cum_rewards)
         print("------------------------ Start episode number:", i)
         s = env.reset()
 
@@ -107,7 +107,8 @@ def train(sess, env, args, actor, critic, actor_noise):
                 cum_rewards.append(cum_rewards[j-1]+reward)
 
             if j % PLOT_FREQUENCY:
-                update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
+                print(j)
+                #update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
 
             replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), r,
                               terminal, np.reshape(s2, (actor.s_dim,)))
