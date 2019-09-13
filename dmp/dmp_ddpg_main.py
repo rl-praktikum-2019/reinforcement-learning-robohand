@@ -28,13 +28,15 @@ and developed with tflearn + Tensorflow
 Author: Patrick Emami
 """
 RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
-PLOT_FREQUENCY=200
+PLOT_FREQUENCY = 200
+
 
 def get_ball_data(env):
     x_pos = env.env.sim.data.get_body_xpos("object")
     x_velp = env.env.sim.data.get_body_xvelp("object")
     x_velr = env.env.sim.data.get_body_xvelr("object")
     return x_pos, x_velp, x_velr
+
 
 def build_summaries():
     episode_reward = tf.Variable(0.)
@@ -49,7 +51,7 @@ def build_summaries():
 
 
 def train(sess, env, args, actor, critic, actor_noise):
-    episode_length=int(args['max_episode_len'])
+    episode_length = int(args['max_episode_len'])
     # Set up summary Ops
     summary_ops, summary_vars = build_summaries()
 
@@ -76,9 +78,9 @@ def train(sess, env, args, actor, critic, actor_noise):
     dmp = pydmps.dmp_discrete.DMPs_discrete(n_dmps=3, n_bfs=100)
 
     for i in range(int(args['max_episodes'])):
-        rewards=[]
-        cum_rewards=[]
-        #cum_plot = init_cum_reward_plot('random_'+str(episode_length), rewards, cum_rewards)
+        rewards = []
+        cum_rewards = []
+        # cum_plot = init_cum_reward_plot('random_'+str(episode_length), rewards, cum_rewards)
         print("------------------------ Start episode number:", i)
         s = env.reset()
 
@@ -99,16 +101,16 @@ def train(sess, env, args, actor, critic, actor_noise):
             a[0][1] = dy_track[2]
             s2, r, terminal, info = env.step(a[0])
 
-            reward,_,_=get_ball_data(env)[2]
+            reward, _, _ = get_ball_data(env)[2]
             rewards.append(reward)
-            if j==0:
+            if j == 0:
                 cum_rewards.append(reward)
             else:
-                cum_rewards.append(cum_rewards[j-1]+reward)
+                cum_rewards.append(cum_rewards[j - 1] + reward)
 
             if j % PLOT_FREQUENCY:
                 print(j)
-                #update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
+                # update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
 
             replay_buffer.add(np.reshape(s, (actor.s_dim,)), np.reshape(a, (actor.a_dim,)), r,
                               terminal, np.reshape(s2, (actor.s_dim,)))
