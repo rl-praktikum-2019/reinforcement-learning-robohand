@@ -1,11 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
-import pydmps
 from wrappers.gym_wrapper import ThrowEnvWrapper
 import gym
 
-# TODO: Delete this file when its knowledge is no longer needed.
 STEPS = 100
 EPISODES = 20
 PAUSE = 1e-6
@@ -27,7 +25,12 @@ def close():
 
 def plot_avg_reward_per_step(reward_memory, method_name, episode, steps):
     ci = 0.95  # 95% confidence interval
-    # axis=0 results in the mean of reward at each step not in the episode
+    #
+    # Important:    Setting axis=0 results in the mean of reward at each step not in the episode. Since we save rewards
+    #               for each episode (length of array is steps) in the reward memory we have a 2-dim array. We take the
+    #               mean of the column not the row!
+    #               (row=all rewards in an episode, column=reward at a step over all episodes)
+    #
     reward_means = np.mean(reward_memory, axis=0)
     stds = np.std(reward_memory, axis=0)
 
@@ -96,7 +99,7 @@ for episode in range(EPISODES):
         plt.pause(PAUSE)
 
     reward_memory.append(episode_rewards)
-    #plot_avg_reward_per_step(reward_memory, 'DMP', episode + 1, STEPS)
+    # plot_avg_reward_per_step(reward_memory, 'DMP', episode + 1, STEPS)
 
     plot_reward_per_step(episode_rewards, 'DMP', episode + 1, STEPS)
 
