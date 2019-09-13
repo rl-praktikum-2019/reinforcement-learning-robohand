@@ -1,48 +1,84 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
+import pydmps
+from wrappers.gym_wrapper import ThrowEnvWrapper
+import gym
 
-# TODO: Delete this file when its knowledge is no longer needed. 
+# TODO: Delete this file when its knowledge is no longer needed.
+STEPS = 200
+EPISODES = 20
+PAUSE = 1e-6
+
 
 def initialize():
     ## interactive plotting on (no need to close window for next iteration)
     plt.ion()
-    plt.figure(figsize=(20, 10))
+    plt.grid()
+    plt.ylim(0, 2)  # limit y axis
+    plt.title("Please wait for the end of the first episode.")
+    plt.ylabel("Reward per step")
+    plt.xlabel("Play")
+
 
 def close():
     ## disable interactive plotting => otherwise window terminates
     plt.ioff()
     plt.show()
 
-def plot(reward_memory, current_step, method_name, epsilon, num_plays):
+
+def plot(reward_memory, method_name, episode, steps):
     ci = 0.95  # 95% confidence interval
-    means = np.mean(reward_memory, axis=0)
+    reward_means = np.mean(reward_memory, axis=0)
     stds = np.std(reward_memory, axis=0)
-    n = means.size
 
     # compute upper/lower confidence bounds
-    test_stat = st.t.ppf((ci + 1) / 2, e)
-    lower_bound = means - test_stat * stds / np.sqrt(current_step)
-    upper_bound = means + test_stat * stds / np.sqrt(current_step)
+    test_stat = st.t.ppf((ci + 1) / 2, episode)
+    lower_bound = reward_means - test_stat * stds / np.sqrt(episode)
+    upper_bound = reward_means + test_stat * stds / np.sqrt(episode)
 
-    this_manager = plt.get_current_fig_manager()
-    this_manager.window.wm_geometry("+0+0")
+    print('Avg. Reward per step in experiment %d: %.4f' % (episode, sum(reward_means) / steps))
 
     # clear plot frame
     plt.clf()
 
     # plot average reward
-    plt.plot(means, color='blue', label="epsilon=%.2f" % epsilon)
+    ax = plt.plot(reward_means, color='blue', label="epsilon=%.2f" % 0)
 
     # plot upper/lower confidence bound
-    x = np.arange(0, num_plays, 1)
-    plt.fill_between(x=x, y1=lower_bound, y2=upper_bound, color='blue', alpha=0.2, label="CI %.2f" % ci)
-
+    x = np.arange(0, steps, 1)
+    ax = plt.fill_between(x=x, y1=lower_bound, y2=upper_bound, color='blue', alpha=0.2, label="CI %.2f" % ci)
     plt.grid()
     plt.ylim(0, 2)  # limit y axis
-    plt.title(method_name + ': Avg. Reward per step in experiment %d: %.4f' % (current_step, sum(means) / num_plays))
+    plt.title(method_name + ': Avg. Reward per step in experiment %d: %.4f' % (episode, sum(reward_means) / steps))
     plt.ylabel("Reward per step")
     plt.xlabel("Play")
     plt.legend()
-    plt.show()
-    plt.pause(0.01)
+    plt.draw()
+    plt.pause(PAUSE)
+
+
+env = ThrowEnvWrapper(gym.make('HandManipulateEgg-v0'))
+obs = env.reset()
+reward_memory = []
+
+initialize()
+for episode in range(EPISODES):
+
+    obs = env.reset()
+    rewards = []
+    for step in range(STEPS):
+        obs, reward, done, info = env.step(env.action_space.sample())
+        rewards.append(reward)
+        if done:
+            break
+        env.render()
+        plt.pause(PAUSE)
+
+    reward_memory.append(rewards)
+
+    plot(reward_memory, 'DMP', episode + 1, STEPS)
+
+
+env.close()
+close()
