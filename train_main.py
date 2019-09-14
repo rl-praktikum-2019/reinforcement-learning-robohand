@@ -1,6 +1,7 @@
 import pprint as pp
 import math
 import numpy as np
+import tensorflow as tf
 import argparse
 import os
 from environment_setup import EnvironmentSetup
@@ -36,10 +37,11 @@ def build_environment(random_seed, reward):
 #     run_ddpg_robby(args)
 
 
-def compute_action(actor=None, state=None, actor_noise=None, method=None):
+def compute_action(setup, state=None, method=None):
     action = None
     if method is 'ddpg':
-        action = (actor.predict(np.reshape(state, (1, actor.s_dim))) + actor_noise())[0]
+        action = (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
+                setup.actor_noise())[0]
     else:
         action = np.zeros(20)
         #TODO: notify error method needed
@@ -64,7 +66,7 @@ def train_experiment(method, setup):
             cum_plot = init_cum_reward_plot('random_'+str(episode_length), rewards, cum_rewards)
 
         for step in range(episode_length):
-            action = compute_action()  # TODO: get action according to method
+            action = compute_action(setup, state, method)  # TODO: get action according to method
 
             # TODO: reward changes at a different location
             next_state, reward, terminal, info = env.step(action)
@@ -76,7 +78,8 @@ def train_experiment(method, setup):
                 update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
 
             if 'ddpg' in method:
-                # TODO: add replay buffer for DDPG
+                setup.update_replay_buffer(state, action, next_state, reward, terminal)
+
                 # TODO: add minibatch learning for DDPG
 
                 # NOTE: Important for DDPG actor prediction!
@@ -87,6 +90,7 @@ def train_experiment(method, setup):
 
             if terminal:
                 # TODO: print Qmax for ddpg
+                # XXX: Maybe put in ddpg environmen subclass
                 print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), episode,
                                                                              (ep_ave_max_q / float(step + 1))))
                 break
@@ -94,11 +98,14 @@ def train_experiment(method, setup):
 
 def main(args):
     random_seed = int(args['random_seed'])
+    # TODO: Move build env to setup
     env = build_environment(random_seed, 'dense')
-    env_setup = EnvironmentSetup('ddpg',env)
-    env_setup.setup_ddpg(args)
 
-    train_experiment( 'ddpg',env_setup)
+    with tf.Session() as sess:
+        env_setup = EnvironmentSetup('ddpg',env, sess)
+        env_setup.setup_ddpg(args)
+
+        train_experiment('ddpg',env_setup)
 
 
 # XXX: Parameters maybe to main?
@@ -118,7 +125,7 @@ if __name__ == '__main__':
     parser.add_argument('--minibatch-size', help='size of minibatch for minibatch-SGD', default=64)
 
     # run parameters
-    parser.add_argument('--env', help='choose the gym env- tested on {Pendulum-v0}', default='Pendulum-v0')
+    parser.add_argument('--env', help='choose the gym env- tested on {Pendulum-v0}', default='HandManipulateEgg-v0')
     parser.add_argument('--random-seed', help='random seed for repeatability', default=1234)
     parser.add_argument('--max-episodes', help='max num of episodes to do while training', default=50)
     parser.add_argument('--max-episode-len', help='max length of 1 episode', default=1000)
