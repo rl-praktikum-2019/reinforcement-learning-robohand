@@ -49,7 +49,7 @@ def train_experiment(method, setup):
     print('INFO: Training for ' + method)
     episode_length = int(args['max_episode_len'])
 
-    if method is 'dmp':
+    if 'dmp' in method:
         episode_length = setup.dmp.timesteps
 
     for episode in range(int(args['max_episodes'])):
@@ -58,8 +58,9 @@ def train_experiment(method, setup):
         ep_reward = 0
 
         state = env.reset()
-        setup.dmp.reset_state()
-        
+        if 'dmp' in method:
+            setup.dmp.reset_state()
+
         # TODO: see plot class todos
         if args['plot']:
             cum_plot = init_cum_reward_plot('random_' + str(episode_length), rewards, cum_rewards)
@@ -104,14 +105,12 @@ def main(args):
     random_seed = int(args['random_seed'])
     # TODO: Move build env to setup
     env = build_environment(random_seed, 'dense')
+    method = args['method']
 
     with tf.Session() as sess:
-        # TODO: decouple methodname
-        env_setup = ExperimentSetup('ddpg_dmp', env, sess)
-        env_setup.setup_ddpg(args)
-        env_setup.setup_dmp(args)
-
-        train_experiment('ddpg_dmp', env_setup)
+        exp_setup = ExperimentSetup(method, env, sess)
+        exp_setup.setup_experiment(args)
+        train_experiment(method, exp_setup)
 
 
 # XXX: Parameters maybe to main?
@@ -141,6 +140,8 @@ if __name__ == '__main__':
                         default=RESULTS_PATH + './ddpg_results/gym_ddpg')
     parser.add_argument('--summary-dir', help='directory for storing tensorboard info',
                         default=RESULTS_PATH + './ddpg_results/tf_ddpg')
+    parser.add_argument('--method', help="reinforcement learning method for experiment. Possible values are: 'ddpg', 'dmp', 'dmp_ddpg'",
+                        default='dmp_ddpg')
 
     parser.set_defaults(render_env=False)
     parser.set_defaults(use_gym_monitor=False)

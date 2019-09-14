@@ -27,6 +27,12 @@ class ExperimentSetup():
         self.method = method
         self.sess = sess
         self.ep_ave_max_q = 0
+    
+    def setup_experiment(self, args):
+        if 'dmp' in self.method:
+            self.setup_dmp(args)
+        if 'ddpg' in self.method:
+            self.setup_ddpg(args)
 
     # TODO: maybe pass dmp args
     def setup_dmp(self, args=None):
