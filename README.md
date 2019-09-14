@@ -1,7 +1,7 @@
 # Project: Training a robot hand to throw a ball
 ## LMU Reinforcement Learning Praktikum 2019
 
-### Important Documentations
+# Important Documentations
 
 [MuJoCo Python API](https://openai.github.io/mujoco-py/build/html/index.html)
 
@@ -10,7 +10,7 @@
 [Gym Wrappers](https://github.com/openai/gym/tree/master/gym/wrappers)
 
 # Installation
-# Prerequisite
+## Prerequisite
 Since gym can only run mujoco on Linux and macOS, this guide does not work for windows!
 1. Get your mujoco license here by following the listed steps: https://www.roboti.us/license.html
 
