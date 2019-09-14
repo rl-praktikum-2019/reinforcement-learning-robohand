@@ -1,15 +1,26 @@
-# LMU Reinforcement Learning Praktikum 2019
-## Training a robot hand to throw a ball
+# Project: Training a robot hand to throw a ball
+## LMU Reinforcement Learning Praktikum 2019
 
 ### Important Documentations
 
-[API of Physics Simulation](https://openai.github.io/mujoco-py/build/html/index.html)
+[MuJoCo Python API](https://openai.github.io/mujoco-py/build/html/index.html)
 
 [MuJoCo XML Reference](https://www.mujoco.org/book/XMLreference.html)
 
-[Gym Wrapper to extend gym code functionality](https://github.com/openai/gym/tree/master/gym/wrappers)
+[Gym Wrappers](https://github.com/openai/gym/tree/master/gym/wrappers)
 
 # Installation
+# Prerequisite
+Since gym can only run mujoco on Linux and macOS, this guide does not work for windows!
+1. Get your mujoco license here by following the listed steps: https://www.roboti.us/license.html
+
+2. Download mujoco200 binaries for your system(linux or macos!) (not HAPTIX or Plugins) from: https://www.roboti.us/index.html
+
+3. Unzip the content of ``mujoco200_<os_name>`` to your home directory at``.mujoco/mujoco200/``
+
+4. Add your key text file as described in the email from mujoco under ``.mujoco/``
+
+For OS specific install instructions go to the suiting subsection
 
 ## Installation for Macbook
 ```
@@ -44,13 +55,7 @@ export PYTHONPATH="$PYTHONPATH:/Users/studyingam/git_tree/reinforcement-learning
 
 ## Installation on Ubuntu
 
-Get your mujoco license here by following the listed steps: https://www.roboti.us/license.html
-
-Download your desired MuJoCo binaries (not HAPTIX or Plugins) https://www.roboti.us/index.html
-
-Unzip to ``$HOME/.mujoco/mjpro1XXX/`` where XXX is the version number f.e. 200 for 2.0
-
-Add your key text file as described in the email from mujoco under ``$HOME/.mujoco/``.
+As mentioned above make sure that mujoco binaries are in``$HOME/.mujoco/mujoco200/`` and your key is in ``$HOME/.mujoco/``
 
 Add your mujoco bin path to to end of your .bashrc via:
 ```
@@ -61,7 +66,10 @@ source ~/.bashrc
 
 Run the following command to install mujoco-py
 
-(Hint: If the PyCharm terminal can not find the package -> run the command from the ubuntu terminal targeting the python.exe from your desired (conda) environment)
+Hint: 
+If your are using PyCharm you may encounter an error where the mujoco-py package is not found.
+Run the command from the linux os terminal targeting the python.exe from your desired (conda) environment:
+``<path to your conda python.exe>/python.exe pip install mujoco-py``
 
 ```
 pip install mujoco-py
@@ -71,7 +79,7 @@ pip install gym
 # Run
 
 ## Ubuntu with PyCharm
-Add ``LD_LIBRARY_PATH`` with value ``$HOME/.mujoco/mujocoXXX/bin`` as above as a environment variable to your run configuration of the main execution .py file.
+Add ``LD_LIBRARY_PATH`` with value ``$HOME/.mujoco/mujoco200/bin`` as a environment variable to your run configuration of the main execution .py file.
 
 # Custom environment for ball throwing
 Before installing the custom env, make sure gym has been uninstalled.
