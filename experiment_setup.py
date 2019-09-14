@@ -25,6 +25,7 @@ class ExperimentSetup():
         self.env=env
         self.method=method
         self.sess=sess
+        self.ep_ave_max_q=0
 
     def setup_ddpg(self, args):
         sess= self.sess
@@ -73,3 +74,33 @@ class ExperimentSetup():
         r_action = np.reshape(action,(self.actor.a_dim,))
         r_next_state = np.reshape(next_state, (self.actor.s_dim,))
         self.replay_buffer.add(r_state,r_action, reward, terminal, r_next_state)
+
+    def learn_ddpg_minibatch(self, args):
+        # Keep adding experience to the memory until there are at least minibatch size samples
+        if self.replay_buffer.size() > int(args['minibatch_size']):
+            s_batch, a_batch, r_batch, t_batch, s2_batch = \
+                self.replay_buffer.sample_batch(int(args['minibatch_size']))
+
+            # Calculate targets
+            target_q = self.critic.predict_target(s2_batch, self.actor.predict_target(s2_batch))
+
+            y_i = []
+            for k in range(int(args['minibatch_size'])):
+                if t_batch[k]:
+                    y_i.append(r_batch[k])
+                else:
+                    y_i.append(r_batch[k] + self.critic.gamma * target_q[k])
+
+            # Update the critic given the targets
+            predicted_q_value, _ = self.critic.train(s_batch, a_batch, np.reshape(y_i, (int(args['minibatch_size']), 1)))
+
+            self.ep_ave_max_q += np.amax(predicted_q_value)
+
+            # Update the actor policy using the sampled gradient
+            a_outs = self.actor.predict(s_batch)
+            grads = self.critic.action_gradients(s_batch, a_outs)
+            self.actor.train(s_batch, grads[0])
+
+            # Update target networks
+            self.actor.update_target_network()
+            self.critic.update_target_network()

@@ -80,7 +80,8 @@ def train_experiment(method, setup):
             if 'ddpg' in method:
                 setup.update_replay_buffer(state, action, next_state, reward, terminal)
 
-                # TODO: add minibatch learning for DDPG
+                # TODO: Select only args we need instead of all args
+                setup.learn_ddpg_minibatch(args)
 
                 # NOTE: Important for DDPG actor prediction!
                 state = next_state
@@ -89,10 +90,11 @@ def train_experiment(method, setup):
                 ep_reward += reward
 
             if terminal:
-                # TODO: print Qmax for ddpg 
+                # TODO: print Qmax for ddpg
+                # TODO: Save performance metrics in separate class and print them from there
                 # XXX: Maybe put in ddpg environmen subclass 
                 print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), episode,
-                                                                             (ep_ave_max_q / float(step + 1))))
+                                                                             (setup.ep_ave_max_q / float(step + 1))))
                 break
 
 
