@@ -74,9 +74,9 @@ pip install gym
 Add ``LD_LIBRARY_PATH`` with value ``$HOME/.mujoco/mujocoXXX/bin`` as above as a environment variable to your run configuration of the main execution .py file.
 
 # Custom environment for ball throwing
+Before installing the custom env, make sure gym has been uninstalled.
 
 Install custom environment via: 
-
 ``pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment``
 
 Extends the given HandEnv for gym by:
@@ -88,4 +88,4 @@ Extends the given HandEnv for gym by:
 
 ## Run commands: 
 
-- For ddpg: 'python ddpg/ddpg_main.py --render-env --env=ThrowBall-v0'
+- E.g.: For ddpg: 'python train_main.py --render-env --env=ThrowBall-v0' --method='ddpg'
