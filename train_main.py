@@ -5,13 +5,10 @@ import tensorflow as tf
 import argparse
 import os
 from experiment_setup import ExperimentSetup
-from gym import wrappers, make
+from gym import make
 from wrappers.observation_wrapper import ObservationWrapper
 from utils.plots import init_cum_reward_plot, update_plot
 
-# from ddpg.ddpg_main import main as run_ddpg_robby
-# from dmp.dmp_main import main as run_dmp_robby
-# from dmp.dmp_ddpg_main import main as run_dmp_ddpg_robby
 
 RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 
@@ -23,37 +20,25 @@ def build_environment(random_seed, reward):
     return env
 
 
-# def run_dmp_experiment(experiment_params):
-#     print('INFO: Running dmp Robby.')
-#     run_dmp_robby(args)
-#
-#
-# def run_dmp_ddpg_experiment(experiment_params):
-#     print('INFO: Running dmp ddpg Robby.')
-#     run_dmp_ddpg_robby(args)
-#
-
-# def run_ddpg_experiment():
-#     print('INFO: Running ddpg Robby.')
-#     run_ddpg_robby(args)
-
-
 def compute_action(setup, state=None, method=None):
     action = None
-    if method is 'ddpg':
+    if 'ddpg' in method:
         action = (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
                   setup.actor_noise())[0]
-    elif method is 'dmp':
+
+    if 'dmp' in method:
         # TODO: better dmp approach
         # 1. remove wrist joint from learning
         # 2. overwrite but learn wrist (current/first solution)
         # 3. use dmp as bias, try to learn dmp value
-        action = np.zeros(20)
+        if action is None:
+            action = np.zeros(20)
         y_track, dy_track, ddy_track = setup.dmp.step()
         action[1] = ddy_track[0]
-    else:
+
+    # TODO: notify error method needed
+    if action is None:
         action = np.zeros(20)
-        # TODO: notify error method needed
 
     assert action is not None
     return action
@@ -122,11 +107,11 @@ def main(args):
 
     with tf.Session() as sess:
         # TODO: decouple methodname
-        env_setup = ExperimentSetup('dmp', env, sess)
-        # env_setup.setup_ddpg(args)
+        env_setup = ExperimentSetup('ddpg_dmp', env, sess)
+        env_setup.setup_ddpg(args)
         env_setup.setup_dmp(args)
 
-        train_experiment('dmp', env_setup)
+        train_experiment('ddpg_dmp', env_setup)
 
 
 # XXX: Parameters maybe to main?
