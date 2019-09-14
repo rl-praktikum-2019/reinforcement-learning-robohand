@@ -74,9 +74,13 @@ Run the command from the linux os terminal targeting the python.exe from your de
 
 ``<path to your conda python.exe>/python.exe pip install mujoco-py``
 
+Install mujoco-py and our custom environment[our custom environment](#custom-environment-for-ball-throwing)
+
+
 ```
 pip install mujoco-py
-pip install gym
+pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment
+
 ````
 
 # Run
