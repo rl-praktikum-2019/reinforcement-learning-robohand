@@ -74,7 +74,7 @@ Run the command from the linux os terminal targeting the python.exe from your de
 
 ``<path to your conda python.exe>/python.exe pip install mujoco-py``
 
-Install mujoco-py and our custom environment[our custom environment](#custom-environment-for-ball-throwing)
+Install mujoco-py and [our custom environment](#custom-environment-for-ball-throwing)
 
 
 ```
@@ -93,6 +93,9 @@ Add ``LD_LIBRARY_PATH`` with value ``$HOME/.mujoco/mujoco200/bin`` as a environm
 - E.g.: For ddpg: 'python train_main.py --render-env --env=ThrowBall-v0' --method='ddpg'
 
 # Custom environment for ball throwing
+
+Github Repository: https://github.com/rl-praktikum-2019/gym
+
 Before installing the custom env, make sure gym has been uninstalled.
 
 Install custom environment via: 
