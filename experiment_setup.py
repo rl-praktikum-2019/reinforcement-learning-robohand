@@ -20,7 +20,7 @@ def build_summaries():
 
     return summary_ops, summary_vars
 
-class EnvironmentSetup():
+class ExperimentSetup():
     def __init__(self, method, env, sess):
         self.env=env
         self.method=method

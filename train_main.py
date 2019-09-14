@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 import argparse
 import os
-from environment_setup import EnvironmentSetup
+from experiment_setup import ExperimentSetup
 from gym import wrappers, make
 from wrappers.observation_wrapper import ObservationWrapper
 from utils.plots import init_cum_reward_plot, update_plot
@@ -89,8 +89,8 @@ def train_experiment(method, setup):
                 ep_reward += reward
 
             if terminal:
-                # TODO: print Qmax for ddpg
-                # XXX: Maybe put in ddpg environmen subclass
+                # TODO: print Qmax for ddpg 
+                # XXX: Maybe put in ddpg environmen subclass 
                 print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), episode,
                                                                              (ep_ave_max_q / float(step + 1))))
                 break
@@ -101,8 +101,8 @@ def main(args):
     # TODO: Move build env to setup
     env = build_environment(random_seed, 'dense')
 
-    with tf.Session() as sess:
-        env_setup = EnvironmentSetup('ddpg',env, sess)
+    with tf.Session() as sess: 
+        env_setup = ExperimentSetup('ddpg',env, sess)
         env_setup.setup_ddpg(args)
 
         train_experiment('ddpg',env_setup)
