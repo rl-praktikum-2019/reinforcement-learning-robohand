@@ -11,7 +11,9 @@
 
 # Installation
 ## Prerequisite
-Since gym can only run mujoco on Linux and macOS, this guide does not work for windows!
+
+Since gym can only run mujoco on Linux and macOS, this guide **does not work for windows!**
+
 1. Get your mujoco license here by following the listed steps: https://www.roboti.us/license.html
 
 2. Download mujoco200 binaries for your system(linux or macos!) (not HAPTIX or Plugins) from: https://www.roboti.us/index.html
@@ -69,6 +71,7 @@ Run the following command to install mujoco-py
 Hint: 
 If your are using PyCharm you may encounter an error where the mujoco-py package is not found.
 Run the command from the linux os terminal targeting the python.exe from your desired (conda) environment:
+
 ``<path to your conda python.exe>/python.exe pip install mujoco-py``
 
 ```
