@@ -8,6 +8,7 @@ from experiment_setup import ExperimentSetup
 from gym import wrappers, make
 from wrappers.observation_wrapper import ObservationWrapper
 from utils.plots import init_cum_reward_plot, update_plot
+
 # from ddpg.ddpg_main import main as run_ddpg_robby
 # from dmp.dmp_main import main as run_dmp_robby
 # from dmp.dmp_ddpg_main import main as run_dmp_ddpg_robby
@@ -41,31 +42,47 @@ def compute_action(setup, state=None, method=None):
     action = None
     if method is 'ddpg':
         action = (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
-                setup.actor_noise())[0]
+                  setup.actor_noise())[0]
+    elif method is 'dmp':
+        # TODO: better dmp approach
+        # 1. remove wrist joint from learning
+        # 2. overwrite but learn wrist (current/first solution)
+        # 3. use dmp as bias, try to learn dmp value
+        action = np.zeros(20)
+        y_track, dy_track, ddy_track = setup.dmp.step()
+        action[1] = ddy_track[0]
     else:
         action = np.zeros(20)
-        #TODO: notify error method needed
+        # TODO: notify error method needed
 
+    assert action is not None
     return action
+
 
 def train_experiment(method, setup):
     env = setup.env
-    print('INFO: Training for '+ method)
+    print('INFO: Training for ' + method)
     episode_length = int(args['max_episode_len'])
+
+    if method is 'dmp':
+        episode_length = setup.dmp.timesteps
 
     for episode in range(int(args['max_episodes'])):
         rewards = []
         cum_rewards = []
         ep_reward = 0
-        ep_ave_max_q = 0
 
         state = env.reset()
-
-        #TODO: see plot class todos
+        setup.dmp.reset_state()
+        
+        # TODO: see plot class todos
         if args['plot']:
-            cum_plot = init_cum_reward_plot('random_'+str(episode_length), rewards, cum_rewards)
+            cum_plot = init_cum_reward_plot('random_' + str(episode_length), rewards, cum_rewards)
 
         for step in range(episode_length):
+            if args['render_env']:
+                env.render()
+            print("Step: ", step)
             action = compute_action(setup, state, method)  # TODO: get action according to method
 
             # TODO: reward changes at a different location
@@ -75,7 +92,7 @@ def train_experiment(method, setup):
             cum_rewards.append(np.sum(rewards))
 
             if (step % int(args['plot_frequency'])) and args['plot']:
-                update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
+                update_plot(cum_plot, 'random_' + str(episode_length), cum_rewards)
 
             if 'ddpg' in method:
                 setup.update_replay_buffer(state, action, next_state, reward, terminal)
@@ -103,11 +120,13 @@ def main(args):
     # TODO: Move build env to setup
     env = build_environment(random_seed, 'dense')
 
-    with tf.Session() as sess: 
-        env_setup = ExperimentSetup('ddpg',env, sess)
-        env_setup.setup_ddpg(args)
+    with tf.Session() as sess:
+        # TODO: decouple methodname
+        env_setup = ExperimentSetup('dmp', env, sess)
+        # env_setup.setup_ddpg(args)
+        env_setup.setup_dmp(args)
 
-        train_experiment('ddpg',env_setup)
+        train_experiment('dmp', env_setup)
 
 
 # XXX: Parameters maybe to main?
@@ -148,4 +167,4 @@ if __name__ == '__main__':
     main(args)
     # run_dmp_ddpg_experiment(args)
     # run_dmp_experiment(args)
-    #run_ddpg_experiment(args)
+    # run_ddpg_experiment(args)

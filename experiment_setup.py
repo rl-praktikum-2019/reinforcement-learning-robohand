@@ -8,7 +8,7 @@ from ddpg.actor_network import ActorNetwork
 from ddpg.critic_network import CriticNetwork
 from utils.noise import OrnsteinUhlenbeckActionNoise
 from utils.replay_buffer import ReplayBuffer
-
+import pydmps
 
 def build_summaries():
     episode_reward = tf.Variable(0.)
@@ -20,15 +20,25 @@ def build_summaries():
 
     return summary_ops, summary_vars
 
+
 class ExperimentSetup():
     def __init__(self, method, env, sess):
-        self.env=env
-        self.method=method
-        self.sess=sess
-        self.ep_ave_max_q=0
+        self.env = env
+        self.method = method
+        self.sess = sess
+        self.ep_ave_max_q = 0
+
+    # TODO: maybe pass dmp args
+    def setup_dmp(self, args=None):
+        # 1-dimensional since joint can only move in one axis -> up/down axis
+        self.trajectory = [[0], [0], [0], [0], [-1], [1]]
+        y_des = np.array(self.trajectory).T
+        y_des -= y_des[:, 0][:, None]
+        self.dmp = pydmps.dmp_discrete.DMPs_discrete(n_dmps=1, n_bfs=600)
+        self.dmp.imitate_path(y_des=y_des)
 
     def setup_ddpg(self, args):
-        sess= self.sess
+        sess = self.sess
         tf.set_random_seed(int(args['random_seed']))
 
         # Fetch environment state and action space properties
@@ -40,13 +50,13 @@ class ExperimentSetup():
         assert (all(self.env.action_space.high - self.env.action_space.low))
 
         self.actor = ActorNetwork(sess, state_dim, action_dim, action_bound,
-                            float(args['actor_lr']), float(args['tau']),
-                            int(args['minibatch_size']))
+                                  float(args['actor_lr']), float(args['tau']),
+                                  int(args['minibatch_size']))
 
         self.critic = CriticNetwork(sess, state_dim, action_dim,
-                            float(args['critic_lr']), float(args['tau']),
-                            float(args['gamma']),
-                            self.actor.get_num_trainable_vars())
+                                    float(args['critic_lr']), float(args['tau']),
+                                    float(args['gamma']),
+                                    self.actor.get_num_trainable_vars())
 
         self.actor_noise = OrnsteinUhlenbeckActionNoise(mu=np.zeros(action_dim))
 
@@ -71,9 +81,9 @@ class ExperimentSetup():
     def update_replay_buffer(self, state, action, next_state, reward, terminal):
         # TODO: Find out what this is and rename it accordingly
         r_state = np.reshape(state, (self.actor.s_dim,))
-        r_action = np.reshape(action,(self.actor.a_dim,))
+        r_action = np.reshape(action, (self.actor.a_dim,))
         r_next_state = np.reshape(next_state, (self.actor.s_dim,))
-        self.replay_buffer.add(r_state,r_action, reward, terminal, r_next_state)
+        self.replay_buffer.add(r_state, r_action, reward, terminal, r_next_state)
 
     def learn_ddpg_minibatch(self, args):
         # Keep adding experience to the memory until there are at least minibatch size samples
@@ -92,7 +102,8 @@ class ExperimentSetup():
                     y_i.append(r_batch[k] + self.critic.gamma * target_q[k])
 
             # Update the critic given the targets
-            predicted_q_value, _ = self.critic.train(s_batch, a_batch, np.reshape(y_i, (int(args['minibatch_size']), 1)))
+            predicted_q_value, _ = self.critic.train(s_batch, a_batch,
+                                                     np.reshape(y_i, (int(args['minibatch_size']), 1)))
 
             self.ep_ave_max_q += np.amax(predicted_q_value)
 
