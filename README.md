@@ -16,7 +16,7 @@ Since gym can only run mujoco on Linux and macOS, this guide **does not work for
 
 1. Get your mujoco license here by following the listed steps: https://www.roboti.us/license.html
 
-2. Download mujoco200 binaries for your system(linux or macos!) (not HAPTIX or Plugins) from: https://www.roboti.us/index.html
+2. Download mujoco200 binaries for your system(linux or macos!) from: https://www.roboti.us/index.html
 
 3. Unzip the content of ``mujoco200_<os_name>`` to your home directory at``.mujoco/mujoco200/``
 
