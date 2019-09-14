@@ -4,10 +4,12 @@
 import numpy as np
 import tensorflow as tf
 import tflearn
+from gym import make
 from ddpg.actor_network import ActorNetwork
 from ddpg.critic_network import CriticNetwork
 from utils.noise import OrnsteinUhlenbeckActionNoise
 from utils.replay_buffer import ReplayBuffer
+from wrappers.observation_wrapper import ObservationWrapper
 import pydmps
 
 def build_summaries():
@@ -22,12 +24,14 @@ def build_summaries():
 
 
 class ExperimentSetup():
-    def __init__(self, method, env, sess):
-        self.env = env
+    def __init__(self, method, env_name, sess, random_seed):
         self.method = method
         self.sess = sess
         self.ep_ave_max_q = 0
-    
+
+        self.env = ObservationWrapper(make(env_name, reward_type='dense'))
+        self.env.seed(random_seed)
+
     def setup_experiment(self, args):
         if 'dmp' in self.method:
             self.setup_dmp(args)

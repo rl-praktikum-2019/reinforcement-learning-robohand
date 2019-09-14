@@ -6,19 +6,10 @@ import argparse
 import os
 from experiment_setup import ExperimentSetup
 from gym import make
-from wrappers.observation_wrapper import ObservationWrapper
 from utils.plots import init_cum_reward_plot, update_plot
 
 
 RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
-
-
-# TODO: take --env=HandManipulateEgg-v0 out of args
-def build_environment(random_seed, reward):
-    env = ObservationWrapper(make(args['env'], reward_type=reward))
-    env.seed(random_seed)
-    return env
-
 
 def compute_action(setup, state=None, method=None):
     action = None
@@ -68,8 +59,7 @@ def train_experiment(method, setup):
         for step in range(episode_length):
             if args['render_env']:
                 env.render()
-            print("Step: ", step)
-            action = compute_action(setup, state, method)  # TODO: get action according to method
+            action = compute_action(setup, state, method)
 
             # TODO: reward changes at a different location
             next_state, reward, terminal, info = env.step(action)
@@ -103,12 +93,11 @@ def train_experiment(method, setup):
 
 def main(args):
     random_seed = int(args['random_seed'])
-    # TODO: Move build env to setup
-    env = build_environment(random_seed, 'dense')
     method = args['method']
 
     with tf.Session() as sess:
-        exp_setup = ExperimentSetup(method, env, sess)
+        print(args['env'])
+        exp_setup = ExperimentSetup(method, args['env'], sess, args['random_seed'])
         exp_setup.setup_experiment(args)
         train_experiment(method, exp_setup)
 
