@@ -1,31 +1,22 @@
-import tensorflow as tf
 import pprint as pp
+import math
 import numpy as np
 import argparse
 import os
-from utils.replay_buffer import  ReplayBuffer
-import tflearn
-from ddpg.actor_network import ActorNetwork
-from ddpg.critic_network import CriticNetwork
-from utils.noise import OrnsteinUhlenbeckActionNoise
-
-# TODO: Remove redundancy
-from gym import wrappers
-import gym
+from environment_setup import EnvironmentSetup
+from gym import wrappers, make
+from wrappers.observation_wrapper import ObservationWrapper
+from utils.plots import init_cum_reward_plot, update_plot
 # from ddpg.ddpg_main import main as run_ddpg_robby
 # from dmp.dmp_main import main as run_dmp_robby
 # from dmp.dmp_ddpg_main import main as run_dmp_ddpg_robby
-
-from wrappers.observation_wrapper import ObservationWrapper
-from utils.plots import init_cum_reward_plot, update_plot
-import math
 
 RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 
 
 # TODO: take --env=HandManipulateEgg-v0 out of args
 def build_environment(random_seed, reward):
-    env = ObservationWrapper(gym.make(args['env'], reward_type=reward))
+    env = ObservationWrapper(make(args['env'], reward_type=reward))
     env.seed(random_seed)
     return env
 
@@ -39,64 +30,6 @@ def build_environment(random_seed, reward):
 #     print('INFO: Running dmp ddpg Robby.')
 #     run_dmp_ddpg_robby(args)
 #
-#
-
-def build_summaries():
-    episode_reward = tf.Variable(0.)
-    tf.summary.scalar("Reward", episode_reward)
-    episode_ave_max_q = tf.Variable(0.)
-    tf.summary.scalar("Qmax Value", episode_ave_max_q)
-
-    summary_vars = [episode_reward, episode_ave_max_q]
-    summary_ops = tf.summary.merge_all()
-
-    return summary_ops, summary_vars
-
-
-# TODO: setup class containing all needed resources for running experiment
-def setup_ddpg(args, env):
-    with tf.Session() as sess:
-
-        tf.set_random_seed(int(args['random_seed']))
-
-        # Fetch environment state and action space properties
-        state_dim = env.observation_space["observation"].shape[0]
-        action_dim = env.action_space.shape[0]
-        action_bound = env.action_space.high
-
-        # Ensure action bound is symmetric
-        assert (all(env.action_space.high - env.action_space.low))
-
-        actor = ActorNetwork(sess, state_dim, action_dim, action_bound,
-                             float(args['actor_lr']), float(args['tau']),
-                             int(args['minibatch_size']))
-
-        critic = CriticNetwork(sess, state_dim, action_dim,
-                               float(args['critic_lr']), float(args['tau']),
-                               float(args['gamma']),
-                               actor.get_num_trainable_vars())
-
-        actor_noise = OrnsteinUhlenbeckActionNoise(mu=np.zeros(action_dim))
-
-        # Set up summary Ops
-        summary_ops, summary_vars = build_summaries()
-
-        sess.run(tf.global_variables_initializer())
-        writer = tf.summary.FileWriter(args['summary_dir'], sess.graph)
-
-        # Initialize target network weights
-        actor.update_target_network()
-        critic.update_target_network()
-
-        # Initialize replay memory
-        replay_buffer = ReplayBuffer(int(args['buffer_size']), int(args['random_seed']))
-
-        # Needed to enable BatchNorm.
-        # This hurts the performance on Pendulum but could be useful
-        # in other environments.
-        tflearn.is_training(True)
-
-        return sess, actor, critic, actor_noise
 
 # def run_ddpg_experiment():
 #     print('INFO: Running ddpg Robby.')
@@ -105,7 +38,7 @@ def setup_ddpg(args, env):
 
 def compute_action(actor=None, state=None, actor_noise=None, method=None):
     action = None
-    if method == 'ddpg':
+    if method is 'ddpg':
         action = (actor.predict(np.reshape(state, (1, actor.s_dim))) + actor_noise())[0]
     else:
         action = np.zeros(20)
@@ -113,13 +46,12 @@ def compute_action(actor=None, state=None, actor_noise=None, method=None):
 
     return action
 
-
-def train_experiment(env):
-
+def train_experiment(method, setup):
+    env = setup.env
+    print('INFO: Training for '+ method)
     episode_length = int(args['max_episode_len'])
 
     for episode in range(int(args['max_episodes'])):
-
         rewards = []
         cum_rewards = []
         ep_reward = 0
@@ -143,11 +75,12 @@ def train_experiment(env):
             if (step % int(args['plot_frequency'])) and args['plot']:
                 update_plot(cum_plot,'random_'+str(episode_length), cum_rewards)
 
-            # TODO: add replay buffer for DDPG
-            # TODO: add minibatch learning for DDPG
+            if 'ddpg' in method:
+                # TODO: add replay buffer for DDPG
+                # TODO: add minibatch learning for DDPG
 
-            # NOTE: Important for DDPG actor prediction!
-            state = next_state
+                # NOTE: Important for DDPG actor prediction!
+                state = next_state
 
             if not math.isnan(reward):
                 ep_reward += reward
@@ -162,7 +95,10 @@ def train_experiment(env):
 def main(args):
     random_seed = int(args['random_seed'])
     env = build_environment(random_seed, 'dense')
-    train_experiment(env)
+    env_setup = EnvironmentSetup('ddpg',env)
+    env_setup.setup_ddpg(args)
+
+    train_experiment( 'ddpg',env_setup)
 
 
 # XXX: Parameters maybe to main?
