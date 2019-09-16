@@ -13,29 +13,42 @@ RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 
 def compute_action(setup, state=None, method=None):
     action = None
-    if 'ddpg' in method:
-        action = (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
-                  setup.actor_noise())[0]
+    if 'ddpg' in method and 'dmp' not in method:
+        return (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
+                setup.actor_noise())[0]
 
-    if 'dmp' in method:
+    if 'dmp' in method and 'ddpg' not in method:
         # TODO: better dmp approach
         # 1. remove wrist joint from learning
         # 2. overwrite but learn wrist (current/first solution)
         # 3. use dmp as bias, try to learn dmp value
         y_track, dy_track, ddy_track = setup.dmp.step()
 
-        if action is None:
-            # Reduce the effect of dmp trajectory for other joints (fingers)
-            clipped_ddy = np.clip(ddy_track, -0.5, 0.5)
-            action = np.full((20,), clipped_ddy[0])
-            # Remove action for horizontal wrist joint
-            action[0] = 0
+        # Reduce the effect of dmp trajectory for other joints (fingers)
+        clipped_ddy = np.clip(ddy_track, -0.8, 0)
+        action = np.full((20,), clipped_ddy[0])
+        # Remove action for horizontal wrist joint
+        action[0] = 0
         # Use dmp attraction forces for vertical wrist joint
         action[1] = ddy_track[0]
+        return action
 
-    # TODO: notify error method needed
-    if action is None:
-        action = np.zeros(20)
+    if 'dmp' in method and 'ddpg' in method:
+        y_track, dy_track, ddy_track = setup.dmp.step()
+
+        # Reduce the effect of dmp trajectory for other joints (fingers)
+        clipped_ddy = np.clip(ddy_track,  -0.8, 0)
+        action = np.full((20,), clipped_ddy[0])
+
+        ddpg_action = (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
+                       setup.actor_noise())[0]
+
+        action += ddpg_action
+        # Remove action for horizontal wrist joint
+        action[0] = 0
+        # Use dmp attraction forces for vertical wrist joint
+        action[1] = ddy_track[0]
+        return action
 
     assert action is not None
     return action
@@ -99,7 +112,6 @@ def train_experiment(method, setup):
 
 
 def main(args):
-    random_seed = int(args['random_seed'])
     method = args['method']
 
     with tf.Session() as sess:

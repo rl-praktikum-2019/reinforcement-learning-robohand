@@ -9,7 +9,7 @@ from ddpg.actor_network import ActorNetwork
 from ddpg.critic_network import CriticNetwork
 from utils.noise import OrnsteinUhlenbeckActionNoise
 from utils.replay_buffer import ReplayBuffer
-from wrappers.observation_wrapper import ObservationWrapper
+from wrappers.gym_wrapper import ThrowEnvWrapper
 import pydmps
 
 def build_summaries():
@@ -29,7 +29,7 @@ class ExperimentSetup():
         self.sess = sess
         self.ep_ave_max_q = 0
 
-        self.env = ObservationWrapper(make(env_name, reward_type='dense'))
+        self.env = ThrowEnvWrapper(make(env_name, reward_type='dense'))
         self.env.seed(random_seed)
 
     def setup_experiment(self, args):
