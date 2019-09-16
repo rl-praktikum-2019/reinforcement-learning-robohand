@@ -60,15 +60,25 @@ export PYTHONPATH="$PYTHONPATH:/Users/studyingam/git_tree/reinforcement-learning
 As mentioned above make sure that mujoco binaries are in``$HOME/.mujoco/mujoco200/`` and your key is in ``$HOME/.mujoco/``
 
 Add your mujoco bin path to to end of your .bashrc via:
-```
+
+``
 nano ~/.bashrc
-then add: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.mujoco/mujocoXXX/bin
+``
+
+then add the followng line to the end of bashrc:
+
+``export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.mujoco/mujocoXXX/bin``
+
+close and save your changes in nano and persist via:
+
+``
 source ~/.bashrc
-````
+``
 
 Run the following command to install mujoco-py
 
-Hint: 
+**Hint:**
+
 If your are using PyCharm you may encounter an error where the mujoco-py package is not found.
 Run the command from the linux os terminal targeting the python.exe from your desired (conda) environment:
 
@@ -88,9 +98,9 @@ pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environmen
 ## Ubuntu with PyCharm
 Add ``LD_LIBRARY_PATH`` with value ``$HOME/.mujoco/mujoco200/bin`` as a environment variable to your run configuration of the main execution .py file.
 
-## Run commands: 
+## Run from terminal with commands
 
-- E.g.: For ddpg: 'python train_main.py --render-env --env=ThrowBall-v0' --method='ddpg'
+- E.g.: For ddpg: ``python train_main.py --render-env --env=ThrowBall-v0 --method='ddpg``
 
 # Custom environment for ball throwing
 
