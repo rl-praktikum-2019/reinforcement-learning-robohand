@@ -28,9 +28,9 @@ def compute_action(setup, state=None, method=None):
             # Reduce the effect of dmp trajectory for other joints (fingers)
             clipped_ddy = np.clip(ddy_track, -0.5, 0.5)
             action = np.full((20,), clipped_ddy[0])
-            # Remove action for vertical wrist joint
+            # Remove action for horizontal wrist joint
             action[0] = 0
-
+        # Use dmp attraction forces for vertical wrist joint
         action[1] = ddy_track[0]
 
     # TODO: notify error method needed
