@@ -54,6 +54,8 @@ class ExperimentSetup():
         # Fetch environment state and action space properties
         state_dim = self.env.observation_space["observation"].shape[0]
         action_dim = self.env.action_space.shape[0]
+
+        #TODO: change action bound to add bias in DDPG learning of actions -> stay close to our default policy and reduce action space
         action_bound = self.env.action_space.high
 
         # Ensure action bound is symmetric
