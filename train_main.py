@@ -8,8 +8,8 @@ from experiment_setup import ExperimentSetup
 from gym import make
 from utils.plots import init_cum_reward_plot, update_plot
 
-
 RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
+
 
 def compute_action(setup, state=None, method=None):
     action = None
@@ -22,9 +22,15 @@ def compute_action(setup, state=None, method=None):
         # 1. remove wrist joint from learning
         # 2. overwrite but learn wrist (current/first solution)
         # 3. use dmp as bias, try to learn dmp value
-        if action is None:
-            action = np.zeros(20)
         y_track, dy_track, ddy_track = setup.dmp.step()
+
+        if action is None:
+            # Reduce the effect of dmp trajectory for other joints (fingers)
+            clipped_ddy = np.clip(ddy_track, -0.5, 0.5)
+            action = np.full((20,), clipped_ddy[0])
+            # Remove action for vertical wrist joint
+            action[0] = 0
+
         action[1] = ddy_track[0]
 
     # TODO: notify error method needed
@@ -43,9 +49,12 @@ def train_experiment(method, setup):
     if 'dmp' in method:
         episode_length = setup.dmp.timesteps
 
+    rewards = []
+    cum_rewards = []
+
     for episode in range(int(args['max_episodes'])):
-        rewards = []
-        cum_rewards = []
+        rewards.clear()
+        cum_rewards.clear()
         ep_reward = 0
 
         state = env.reset()
@@ -61,7 +70,7 @@ def train_experiment(method, setup):
                 env.render()
             action = compute_action(setup, state, method)
 
-            # TODO: reward changes at a different location
+            # TODO: adapt reward to throw task at a different location
             next_state, reward, terminal, info = env.step(action)
 
             rewards.append(reward)
@@ -127,7 +136,8 @@ if __name__ == '__main__':
                         default=RESULTS_PATH + './ddpg_results/gym_ddpg')
     parser.add_argument('--summary-dir', help='directory for storing tensorboard info',
                         default=RESULTS_PATH + './ddpg_results/tf_ddpg')
-    parser.add_argument('--method', help="reinforcement learning method for experiment. Possible values are: 'ddpg', 'dmp', 'dmp_ddpg'",
+    parser.add_argument('--method',
+                        help="reinforcement learning method for experiment. Possible values are: 'ddpg', 'dmp', 'dmp_ddpg'",
                         default='dmp_ddpg')
 
     parser.set_defaults(render_env=False)
