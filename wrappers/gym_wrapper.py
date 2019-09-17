@@ -13,12 +13,12 @@ class ThrowEnvWrapper(gym.Wrapper):
     # Adapt gym - The final adapted gym wrapper with the best adaptions for reward and observations
     #
     #
-    def __init__(self, env, desired_ball_velocity=np.array([0, 0, 1])):
+    def __init__(self, env):
         super(ThrowEnvWrapper, self).__init__(env)
-        self.desired_ball_velocity = desired_ball_velocity
+        self.desired_ball_velocity = np.array([0, 0, 1])
         self.max_velocity = 0
         self.max_height = 0
-        self.target_height = 0.6
+        self.target_height = 0.4
 
     def reset(self, **kwargs):
         obs = self.env.reset(**kwargs)

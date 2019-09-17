@@ -1,5 +1,6 @@
 import tflearn
 import tensorflow as tf
+import numpy as np
 
 
 class ActorNetwork(object):
@@ -89,3 +90,31 @@ class ActorNetwork(object):
 
     def get_num_trainable_vars(self):
         return self.num_trainable_vars
+
+
+class DMPBiasedActorNetwork(ActorNetwork):
+    def __init__(self, sess, state_dim, action_dim, action_bound, learning_rate, tau, batch_size, dmp):
+        super().__init__(sess, state_dim, action_dim, action_bound, learning_rate, tau, batch_size)
+        self.dmp = dmp
+        self.dmp_action_bound = np.full(self.action_bound.shape, self.dmp.ddy)
+        self.threshold = 0.2
+
+    def update_scaled_out(self):
+        old_action_bound = self.dmp_action_bound
+        # Se action bound of fingers to the dmp bias and allow a threshold
+        self.dmp_action_bound[2:] = self.dmp.ddy[0] + self.threshold
+        # Remove action for horizontal wrist joint
+        self.dmp_action_bound[0] = 0
+        # Use dmp attraction forces for vertical wrist joint
+        self.dmp_action_bound[1] = self.dmp.ddy[0]
+        if all((old_action_bound-self.dmp_action_bound) > 0.1):
+            print("Update scaled out")
+            return tf.multiply(self.out, self.dmp_action_bound)
+        else:
+            return self.scaled_out
+
+    def predict(self, inputs):
+        dmp_biased_scaled_out = self.update_scaled_out()
+        return self.sess.run(self.scaled_out, feed_dict={
+            self.inputs: inputs
+        })
