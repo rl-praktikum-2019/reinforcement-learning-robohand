@@ -90,7 +90,6 @@ class Plotter():
 
         # plot upper/lower confidence bound
         plt.grid()
-        plt.ylim(-20, 20)  # limit y axis
         plt.title(method_name + ': Avg. Reward in experiment %d: %.4f' % (episode, np.mean(rewards)))
         plt.ylabel("Reward")
         plt.xlabel("Step")
@@ -119,9 +118,9 @@ for episode in range(EPISODES):
         plt.pause(PAUSE)
 
     reward_memory.append(episode_rewards)
-    plotter.plot_avg_reward_per_step(reward_memory, 'DMP', episode + 1, STEPS)
+    #plotter.plot_avg_reward_per_step(reward_memory, 'DMP', episode + 1, STEPS)
 
-    #plotter.plot_reward_per_step(episode_rewards, 'DMP', episode + 1, STEPS)
+    plotter.plot_reward_per_step(episode_rewards, 'DMP', episode + 1, STEPS)
 
 env.close()
 plotter.close()
