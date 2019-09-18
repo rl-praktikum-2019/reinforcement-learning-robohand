@@ -100,7 +100,7 @@ Add ``LD_LIBRARY_PATH`` with value ``$HOME/.mujoco/mujoco200/bin`` as a environm
 
 ## Run from terminal with commands
 
-- E.g.: For ddpg: ``python train_main.py --render-env --env=ThrowBall-v0 --method='ddpg``
+- E.g.: For ddpg: ``python train_main.py --render-env --env=ThrowBall-v0 --algo='ddpg``
 
 # Custom environment for ball throwing
 

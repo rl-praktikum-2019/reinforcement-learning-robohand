@@ -9,7 +9,7 @@ from time import sleep
 # XXX: Do we want to show several plots live?
 # XXX: Do we need multiple lines and labels for update_plot()? 
 #       A: I think not since multiple lines are only for presentation &
-#       update_plot() is a live demo method.
+#       update_plot() is a live demo algorithm.
 
 DATA_PATH=os.path.dirname(os.path.realpath(__file__))+'/../data'
 PLOT_PATH=DATA_PATH+'/plots/'
@@ -22,7 +22,7 @@ PLOT_FREQUENCY=200
 plt.ion()
 #plt.figure(figsize=(20, 10))
 
-# TODO: This method is not being used.
+# TODO: This algorithm is not being used.
 def close():
     ## disable interactive plotting => otherwise window terminates
     plt.ioff()
