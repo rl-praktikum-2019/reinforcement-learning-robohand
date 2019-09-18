@@ -24,8 +24,8 @@ def build_summaries():
 
 
 class ExperimentSetup():
-    def __init__(self, method, env_name, sess, random_seed):
-        self.method = method
+    def __init__(self, algorithm, env_name, sess, random_seed):
+        self.algorithm = algorithm
         self.sess = sess
         self.ep_ave_max_q = 0
 
@@ -33,9 +33,9 @@ class ExperimentSetup():
         self.env.seed(random_seed)
 
     def setup_experiment(self, args):
-        if 'dmp' in self.method:
+        if 'dmp' in self.algorithm:
             self.setup_dmp(args)
-        if 'ddpg' in self.method:
+        if 'ddpg' in self.algorithm:
             self.setup_ddpg(args)
 
     # TODO: maybe pass dmp args
