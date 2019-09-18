@@ -19,6 +19,7 @@ class ThrowEnvWrapper(gym.Wrapper):
         self.max_velocity = 0
         self.max_height = 0
         self.target_height = 0.4
+        self.ball_center_z = 0
 
     def reset(self, **kwargs):
         obs = self.env.reset(**kwargs)
@@ -27,11 +28,11 @@ class ThrowEnvWrapper(gym.Wrapper):
     def step(self, action):
         observation, reward, done, info = self.env.step(action)
 
-        ball_center_z = self.sim.data.get_joint_qpos(BALL_JOINT_NAME)[2]
-        if ball_center_z <= BALL_RADIUS:
+        self.ball_center_z = self.sim.data.get_joint_qpos(BALL_JOINT_NAME)[2]
+        if self.ball_center_z <= BALL_RADIUS:
             print("Failure. Ball was dropped -> Reset Environment")
             done = True
-        if ball_center_z > self.target_height:
+        if self.ball_center_z > self.target_height:
             print("Success. Ball reached target height -> Reset Environment")
             done = True
 
@@ -43,7 +44,6 @@ class ThrowEnvWrapper(gym.Wrapper):
         ball_velp = self.sim.data.get_joint_qvel(BALL_JOINT_NAME)[:3]
         ball_center_vel_z = ball_velp[2]
 
-        print(ball_center_z)
         if ball_center_z > self.target_height:
             print("Reached height.")
             return 1000
