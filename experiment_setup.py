@@ -33,10 +33,18 @@ class ExperimentSetup():
         self.env.seed(random_seed)
 
     def setup_experiment(self, args):
+        if 'ppo' in self.algorithm:
+            self.setup_ppo(args)
         if 'dmp' in self.algorithm:
             self.setup_dmp(args)
         if 'ddpg' in self.algorithm:
             self.setup_ddpg(args)
+
+    def setup_ppo(self, args=None):
+        sess = self.sess
+        # TODO: Use same timesteps as in dmp or take them from args
+        self.timesteps=100
+        print('INFO: ----------Setup PPO')
 
     # TODO: maybe pass dmp args
     def setup_dmp(self, args=None):

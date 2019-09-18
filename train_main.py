@@ -59,6 +59,12 @@ def train_experiment(algorithm, setup):
     print('INFO: Training for ' + algorithm)
     episode_length = int(args['max_episode_len'])
 
+    if 'ppo' in algorithm:
+        num_timesteps=setup.timesteps
+        seed=args['random_seed']
+
+        print('PPO', num_timesteps, seed)
+
     if 'dmp' in algorithm:
         episode_length = setup.dmp.timesteps
 
