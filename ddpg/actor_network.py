@@ -21,12 +21,12 @@ class ActorNetwork(object):
         self.batch_size = batch_size
 
         # Actor Network
-        self.inputs, self.out, self.scaled_out = self.create_actor_network()
+        self.inputs, self.out, self.scaled_out = self.create_actor_network('Actor')
 
         self.network_params = tf.trainable_variables()
 
         # Target Network
-        self.target_inputs, self.target_out, self.target_scaled_out = self.create_actor_network()
+        self.target_inputs, self.target_out, self.target_scaled_out = self.create_actor_network('Actor-Target')
 
         self.target_network_params = tf.trainable_variables()[
                                      len(self.network_params):]
@@ -53,18 +53,22 @@ class ActorNetwork(object):
         self.num_trainable_vars = len(
             self.network_params) + len(self.target_network_params)
 
-    def create_actor_network(self):
+    def create_actor_network(self, name):
         inputs = tflearn.input_data(shape=[None, self.s_dim])
-        net = tflearn.fully_connected(inputs, 400)
-        net = tflearn.layers.normalization.batch_normalization(net)
+        net = tflearn.fully_connected(inputs, 400, name=name + '-Inputs')
+        net = tflearn.layers.normalization.batch_normalization(net, name=name + '-BN')
         net = tflearn.activations.relu(net)
-        net = tflearn.fully_connected(net, 300)
-        net = tflearn.layers.normalization.batch_normalization(net)
+        net = tflearn.fully_connected(net, 300, name=name + '-Full')
+        net = tflearn.layers.normalization.batch_normalization(net, name=name + '-BN')
         net = tflearn.activations.relu(net)
         # Final layer weights are init to Uniform[-3e-3, 3e-3]
-        w_init = tflearn.initializations.uniform(minval=-0.003, maxval=0.003)
+        w_init = tflearn.initializations.uniform(minval=-0.003, maxval=0.00)
         out = tflearn.fully_connected(
-            net, self.a_dim, activation='tanh', weights_init=w_init)
+            net, self.a_dim, activation='tanh', weights_init=w_init, name=name + '-Out')
+
+        summ_writer = tf.summary.FileWriter('graphs/actor', self.sess.graph)
+        summ_writer.close()
+
         # Scale output to -action_bound to action_bound
         scaled_out = tf.multiply(out, self.action_bound)
         return inputs, out, scaled_out
@@ -90,31 +94,3 @@ class ActorNetwork(object):
 
     def get_num_trainable_vars(self):
         return self.num_trainable_vars
-
-
-class DMPBiasedActorNetwork(ActorNetwork):
-    def __init__(self, sess, state_dim, action_dim, action_bound, learning_rate, tau, batch_size, dmp):
-        super().__init__(sess, state_dim, action_dim, action_bound, learning_rate, tau, batch_size)
-        self.dmp = dmp
-        self.dmp_action_bound = np.full(self.action_bound.shape, self.dmp.ddy)
-        self.threshold = 0.2
-
-    def update_scaled_out(self):
-        old_action_bound = self.dmp_action_bound
-        # Se action bound of fingers to the dmp bias and allow a threshold
-        self.dmp_action_bound[2:] = self.dmp.ddy[0] + self.threshold
-        # Remove action for horizontal wrist joint
-        self.dmp_action_bound[0] = 0
-        # Use dmp attraction forces for vertical wrist joint
-        self.dmp_action_bound[1] = self.dmp.ddy[0]
-        if all((old_action_bound-self.dmp_action_bound) > 0.1):
-            print("Update scaled out")
-            return tf.multiply(self.out, self.dmp_action_bound)
-        else:
-            return self.scaled_out
-
-    def predict(self, inputs):
-        dmp_biased_scaled_out = self.update_scaled_out()
-        return self.sess.run(self.scaled_out, feed_dict={
-            self.inputs: inputs
-        })

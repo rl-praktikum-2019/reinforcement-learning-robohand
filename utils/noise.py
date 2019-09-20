@@ -22,24 +22,3 @@ class OrnsteinUhlenbeckActionNoise:
 
     def __repr__(self):
         return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(self.mu, self.sigma)
-
-#TODO: create a DMP noise to explore like described in DDPG paper
-class DMPActionNoise:
-    def __init__(self, dmp):
-        self.dmp = dmp
-
-    def __call__(self):
-        y_track, dy_track, ddy_track = self.dmp.y, self.dmp.dy, self.dmp.ddy
-        # Reduce the effect of dmp trajectory for other joints (fingers)
-        clipped_ddy = np.clip(ddy_track, -0.8, 0)
-        target = np.full((20,), clipped_ddy[0])
-        # Remove action for horizontal wrist joint
-        target[0] = 0
-        # Use dmp attraction forces for vertical wrist joint
-        target[1] = ddy_track[0]
-        target * np.random.normal(size=self.target.shape)
-
-        return target
-
-    def __repr__(self):
-        return 'OrnsteinUhlenbeckActionNoise(mu={}, sigma={})'.format(self.mu, self.sigma)

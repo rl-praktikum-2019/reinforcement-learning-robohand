@@ -49,10 +49,10 @@ class ExperimentSetup():
     # TODO: maybe pass dmp args
     def setup_dmp(self, args=None):
         # 1-dimensional since joint can only move in one axis -> up/down axis
-        self.trajectory = [[0], [0], [0], [0], [-1], [1]]
+        self.trajectory = [[0], [-.15], [.15]]
         y_des = np.array(self.trajectory).T
         y_des -= y_des[:, 0][:, None]
-        self.dmp = pydmps.dmp_discrete.DMPs_discrete(n_dmps=1, n_bfs=600)
+        self.dmp = pydmps.dmp_discrete.DMPs_discrete(n_dmps=1, n_bfs=200)
         self.dmp.imitate_path(y_des=y_des)
 
     def setup_ddpg(self, args):
@@ -62,8 +62,6 @@ class ExperimentSetup():
         # Fetch environment state and action space properties
         state_dim = self.env.observation_space["observation"].shape[0]
         action_dim = self.env.action_space.shape[0]
-
-        #TODO: change action bound to add bias in DDPG learning of actions -> stay close to our default policy and reduce action space
         action_bound = self.env.action_space.high
 
         # Ensure action bound is symmetric
@@ -81,7 +79,7 @@ class ExperimentSetup():
         self.actor_noise = OrnsteinUhlenbeckActionNoise(mu=np.zeros(action_dim))
 
         # Set up summary Ops
-        summary_ops, summary_vars = build_summaries()
+        self.summary_ops, self.summary_vars = build_summaries()
 
         sess.run(tf.global_variables_initializer())
         writer = tf.summary.FileWriter(args['summary_dir'], sess.graph)
