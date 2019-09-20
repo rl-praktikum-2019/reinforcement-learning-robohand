@@ -12,6 +12,8 @@ PAUSE = 1e-6
 class Plotter():
     def __init__(self):
         self.cum_rewards = []
+        self.rewards = []
+        self.ball_heights = []
         self.cum_reward = 0
 
     def initialize(self):
@@ -21,6 +23,12 @@ class Plotter():
         plt.ylim(20, 20)  # limit y axis
         plt.title("Please wait for the end of the first episode.")
 
+    def clear_episode_data(self):
+        self.cum_rewards = []
+        self.rewards = []
+        self.ball_heights = []
+        self.cum_reward = 0
+
     def close(self):
         ## disable interactive plotting => otherwise window terminates
         plt.ioff()
@@ -29,7 +37,6 @@ class Plotter():
     def plot_cum_reward_per_step(self, reward, method_name, episode):
         self.cum_reward += reward
         self.cum_rewards.append(self.cum_reward)
-        print('Cum. Reward in experiment %d: %.4f' % (episode, self.cum_reward))
 
         # clear plot frame
         plt.clf()
@@ -60,8 +67,6 @@ class Plotter():
         lower_bound = reward_means - test_stat * stds / np.sqrt(episode)
         upper_bound = reward_means + test_stat * stds / np.sqrt(episode)
 
-        print('Avg. Reward per step in experiment %d: %.4f' % (episode, sum(reward_means) / steps))
-
         # clear plot frame
         plt.clf()
 
@@ -80,11 +85,8 @@ class Plotter():
         plt.pause(PAUSE)
 
     def plot_reward_per_step(self, rewards, method_name, episode, steps):
-        print('Avg. Reward in experiment %d: %.4f' % (episode, np.mean(rewards)))
-
         # clear plot frame
         plt.clf()
-
         # plot average reward
         ax = plt.plot(rewards, color='blue', label="reward")
 
@@ -97,30 +99,46 @@ class Plotter():
         plt.draw()
         plt.pause(PAUSE)
 
+    def plot_ballheight_per_step(self, env, method_name, episode):
+        self.ball_heights.append(env.ball_center_z)
+        # clear plot frame
+        plt.clf()
 
-env = ThrowEnvWrapper(gym.make('HandManipulateEgg-v0'))
-obs = env.reset()
-reward_memory = []
-plotter = Plotter()
+        # plot average reward
+        ax = plt.plot(self.ball_heights, color='blue', label="reward")
 
-plotter.initialize()
-for episode in range(EPISODES):
-
-    obs = env.reset()
-    episode_rewards = np.zeros(STEPS)
-    for step in range(STEPS):
-        obs, reward, done, info = env.step(env.action_space.sample())
-        # plotter.plot_cum_reward_per_step(reward, 'DMP', episode + 1)
-        episode_rewards[step] = reward
-        if done:
-            break
-        env.render()
+        # plot upper/lower confidence bound
+        plt.grid()
+        plt.title(method_name + ': Avg. Height in experiment %d: %.4f' % (episode, np.mean(self.ball_heights)))
+        plt.ylabel("Height")
+        plt.xlabel("Step")
+        plt.legend()
+        plt.draw()
         plt.pause(PAUSE)
 
-    reward_memory.append(episode_rewards)
-    #plotter.plot_avg_reward_per_step(reward_memory, 'DMP', episode + 1, STEPS)
-
-    plotter.plot_reward_per_step(episode_rewards, 'DMP', episode + 1, STEPS)
-
-env.close()
-plotter.close()
+# env = ThrowEnvWrapper(gym.make('ThrowBall-v0'))
+# obs = env.reset()
+# reward_memory = []
+# plotter = Plotter()
+#
+# plotter.initialize()
+# for episode in range(EPISODES):
+#
+#     obs = env.reset()
+#     episode_rewards = np.zeros(STEPS)
+#     for step in range(STEPS):
+#         obs, reward, done, info = env.step(env.action_space.sample())
+#         #plotter.plot_cum_reward_per_step(reward, 'DMP', episode + 1)
+#         episode_rewards[step] = reward
+#         if done:
+#             break
+#         env.render()
+#
+#     #plotter.clear_episode_data()
+#     reward_memory.append(episode_rewards)
+#     plotter.plot_avg_reward_per_step(reward_memory, 'DMP', episode + 1, STEPS)
+#
+#     #plotter.plot_reward_per_step(episode_rewards, 'DMP', episode + 1, STEPS)
+#
+# env.close()
+# plotter.close()
