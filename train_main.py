@@ -103,6 +103,7 @@ def train_experiment(algorithm, setup):
                 ep_reward += reward
 
             if terminal:
+                #TODO summary
                 summary_str = setup.sess.run(setup.summary_ops, feed_dict={
                     setup.summary_vars[0]: ep_reward,
                     setup.summary_vars[1]: setup.ep_ave_max_q / float(step)
