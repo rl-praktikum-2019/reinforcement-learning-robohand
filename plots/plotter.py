@@ -3,10 +3,102 @@ import numpy as np
 import scipy.stats as st
 import gym
 from wrappers.gym_wrapper import ThrowEnvWrapper
+import multiprocessing as mp
+import time
+import pickle
 
 STEPS = 100
 EPISODES = 20
 PAUSE = 1e-6
+
+
+class ProcessPlotter(object):
+    def __init__(self):
+        self.x = []
+        self.y = []
+
+    def terminate(self):
+        plt.close('all')
+
+    def call_back(self):
+        while self.pipe.poll():
+            command = self.pipe.recv()
+            if command is None:
+                self.terminate()
+                return False
+            else:
+                self.ax.clear()
+
+                self.plot_reward_per_step(command)
+
+        self.fig.canvas.draw()
+        return True
+
+    def __call__(self, pipe):
+        print('Starting plotting.')
+
+        self.pipe = pipe
+        self.fig, self.ax = plt.subplots()
+        self.ax.set_title("Please wait for the end of the first episode.")
+        timer = self.fig.canvas.new_timer(interval=500)
+        timer.add_callback(self.call_back)
+        timer.start()
+        plt.show()
+
+    def plot_reward_per_step(self, command):
+        data_array = command[:]
+        self.x = np.arange(0, len(data_array), 1)
+        self.y = data_array
+        plt.title('Reward per step')
+        plt.ylabel("Reward")
+        plt.xlabel("Step")
+        self.ax.plot(self.x, self.y, color='blue', label="reward")
+        plt.legend()
+
+
+class NBPlot(object):
+    def __init__(self):
+        self.plot_pipe, plotter_pipe = mp.Pipe()
+        self.plotter = ProcessPlotter()
+        self.plot_process = mp.Process(target=self.plotter, args=(plotter_pipe,), daemon=True)
+        self.plot_process.start()
+
+    def plot(self, data, finished=False):
+        send = self.plot_pipe.send
+        if finished:
+            send(None)
+        else:
+            send(data)
+
+
+def main():
+    env = ThrowEnvWrapper(gym.make('ThrowBall-v0'))
+    obs = env.reset()
+    reward_memory = []
+    episode_rewards = np.zeros(STEPS)
+    pl = NBPlot()
+    for episode in range(EPISODES):
+
+        obs = env.reset()
+        episode_rewards[:] = 0
+        for step in range(STEPS):
+            obs, reward, done, info = env.step(env.action_space.sample())
+            episode_rewards[step] = reward
+            if done:
+                break
+            env.render()
+        pl.plot(episode_rewards)
+
+        reward_memory.append(episode_rewards)
+
+    pl.plot(finished=True)
+    env.close()
+
+
+if __name__ == '__main__':
+    if plt.get_backend() == "MacOSX":
+        mp.set_start_method("forkserver")
+    main()
 
 
 class Plotter():
