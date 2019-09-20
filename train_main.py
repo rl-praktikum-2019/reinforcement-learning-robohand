@@ -53,7 +53,7 @@ def train_experiment(algorithm, setup):
     plotter.initialize()
 
     if 'dmp' in algorithm:
-        episode_length = setup.dmp.timesteps
+        episode_length = 20
 
     reward_memory = []
     cum_rewards = []

@@ -58,39 +58,42 @@ class ThrowEnvWrapper(gym.Wrapper):
             print("Success. Ball in target region.")
             reward += 40
 
-        # diff = np.absolute(self.dmp_action - self.ddpg_action)
-        # correction = diff[diff < self.threshold] = 0
-        # reward = sum(correction)
+        if abs(self.ball_center_vel_z) < 0.1:
+            reward -= (1 - self.ball_center_vel_z) * 2
+            print((1 - self.ball_center_vel_z) * 2)
+            # diff = np.absolute(self.dmp_action - self.ddpg_action)
+            # correction = diff[diff < self.threshold] = 0
+            # reward = sum(correction)
 
-        # if dir > 0:
-        #     reward += self.ball_center_vel_z * 10.
-        #     reward += abs(self.ball_velp[0]) * -20.
-        #     reward += abs(self.ball_velp[1]) * -20.
+            # if dir > 0:
+            #     reward += self.ball_center_vel_z * 10.
+            #     reward += abs(self.ball_velp[0]) * -20.
+            #     reward += abs(self.ball_velp[1]) * -20.
 
-        # if self.ball_center_vel_z > self.max_velocity:
-        #     velocity_reward = self.ball_center_vel_z * 10.
-        #     reward += velocity_reward
-        #     print("New achieved max velocity:", self.ball_center_vel_z)
-        #     self.max_velocity = self.ball_center_vel_z
+            # if self.ball_center_vel_z > self.max_velocity:
+            #     velocity_reward = self.ball_center_vel_z * 10.
+            #     reward += velocity_reward
+            #     print("New achieved max velocity:", self.ball_center_vel_z)
+            #     self.max_velocity = self.ball_center_vel_z
 
-        if self.ball_center_z > self.max_height:
-            height_reward = self.ball_center_z * 20.
-            reward += height_reward
-            self.max_height = self.ball_center_z
-            print("New achieved max height:", self.ball_center_z)
+            if self.ball_center_z > self.max_height:
+                height_reward = self.ball_center_z * 20.
+                reward += height_reward
+                self.max_height = self.ball_center_z
+                print("New achieved max height:", self.ball_center_z)
 
-        # achieved = self.ball_velp / np.linalg.norm(self.ball_velp, ord=1)
-        # delta_vel = self.desired_ball_velocity - achieved
-        # d_vel = np.linalg.norm(delta_vel, axis=-1)
-        # vel_reward = (10. * d_vel)
-        # reward -= vel_reward
+            # achieved = self.ball_velp / np.linalg.norm(self.ball_velp, ord=1)
+            # delta_vel = self.desired_ball_velocity - achieved
+            # d_vel = np.linalg.norm(delta_vel, axis=-1)
+            # vel_reward = (10. * d_vel)
+            # reward -= vel_reward
 
-        # if self.ball_center_z <= BALL_RADIUS:
-        #     print("Ball was dropped: -20 reward")
-        #     return -100
+            # if self.ball_center_z <= BALL_RADIUS:
+            #     print("Ball was dropped: -20 reward")
+            #     return -100
 
-        # if dir > 0:
-        #     reward += (self.ball_center_z - self.target_height) * 10.
+            # if dir > 0:
+            #     reward += (self.ball_center_z - self.target_height) * 10.
         return reward
 
     def get_ball_data(self):
