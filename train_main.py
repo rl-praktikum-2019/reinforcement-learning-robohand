@@ -11,13 +11,13 @@ from utils.plots import init_cum_reward_plot, update_plot
 RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 
 
-def compute_action(setup, state=None, method=None):
+def compute_action(setup, state=None, algorithm=None):
     action = None
-    if 'ddpg' in method and 'dmp' not in method:
+    if 'ddpg' in algorithm and 'dmp' not in algorithm:
         return (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
                 setup.actor_noise())[0]
 
-    if 'dmp' in method and 'ddpg' not in method:
+    if 'dmp' in algorithm and 'ddpg' not in algorithm:
         # TODO: better dmp approach
         # 1. remove wrist joint from learning
         # 2. overwrite but learn wrist (current/first solution)
@@ -33,7 +33,7 @@ def compute_action(setup, state=None, method=None):
         action[1] = ddy_track[0]
         return action
 
-    if 'dmp' in method and 'ddpg' in method:
+    if 'dmp' in algorithm and 'ddpg' in algorithm:
         y_track, dy_track, ddy_track = setup.dmp.step()
 
         # Reduce the effect of dmp trajectory for other joints (fingers)
@@ -54,12 +54,18 @@ def compute_action(setup, state=None, method=None):
     return action
 
 
-def train_experiment(method, setup):
+def train_experiment(algorithm, setup):
     env = setup.env
-    print('INFO: Training for ' + method)
+    print('INFO: Training for ' + algorithm)
     episode_length = int(args['max_episode_len'])
 
-    if 'dmp' in method:
+    if 'ppo' in algorithm:
+        num_timesteps=setup.timesteps
+        seed=args['random_seed']
+
+        print('PPO', num_timesteps, seed)
+
+    if 'dmp' in algorithm:
         episode_length = setup.dmp.timesteps
 
     rewards = []
@@ -71,7 +77,7 @@ def train_experiment(method, setup):
         ep_reward = 0
 
         state = env.reset()
-        if 'dmp' in method:
+        if 'dmp' in algorithm:
             setup.dmp.reset_state()
 
         # TODO: see plot class todos
@@ -81,7 +87,7 @@ def train_experiment(method, setup):
         for step in range(episode_length):
             if args['render_env']:
                 env.render()
-            action = compute_action(setup, state, method)
+            action = compute_action(setup, state, algorithm)
 
             # TODO: adapt reward to throw task at a different location
             next_state, reward, terminal, info = env.step(action)
@@ -92,7 +98,7 @@ def train_experiment(method, setup):
             if (step % int(args['plot_frequency'])) and args['plot']:
                 update_plot(cum_plot, 'random_' + str(episode_length), cum_rewards)
 
-            if 'ddpg' in method:
+            if 'ddpg' in algorithm:
                 setup.update_replay_buffer(state, action, next_state, reward, terminal)
 
                 # XXX: Select only args we need instead of all args
@@ -112,13 +118,13 @@ def train_experiment(method, setup):
 
 
 def main(args):
-    method = args['method']
+    algorithm = args['algo']
 
     with tf.Session() as sess:
         print(args['env'])
-        exp_setup = ExperimentSetup(method, args['env'], sess, args['random_seed'])
+        exp_setup = ExperimentSetup(algorithm, args['env'], sess, args['random_seed'])
         exp_setup.setup_experiment(args)
-        train_experiment(method, exp_setup)
+        train_experiment(algorithm, exp_setup)
 
 
 # XXX: Parameters maybe to main?
@@ -148,8 +154,8 @@ if __name__ == '__main__':
                         default=RESULTS_PATH + './ddpg_results/gym_ddpg')
     parser.add_argument('--summary-dir', help='directory for storing tensorboard info',
                         default=RESULTS_PATH + './ddpg_results/tf_ddpg')
-    parser.add_argument('--method',
-                        help="reinforcement learning method for experiment. Possible values are: 'ddpg', 'dmp', 'dmp_ddpg'",
+    parser.add_argument('--algo',
+                        help="reinforcement learning algo for experiment. Possible values are: 'ddpg', 'dmp', 'dmp_ddpg'",
                         default='dmp_ddpg')
 
     parser.set_defaults(render_env=False)

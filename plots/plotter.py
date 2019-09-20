@@ -34,7 +34,7 @@ class Plotter():
         plt.ioff()
         plt.show()
 
-    def plot_cum_reward_per_step(self, reward, method_name, episode):
+    def plot_cum_reward_per_step(self, reward, algorithm, episode):
         self.cum_reward += reward
         self.cum_rewards.append(self.cum_reward)
 
@@ -44,14 +44,14 @@ class Plotter():
         # plot average reward
         ax = plt.plot(self.cum_rewards, color='blue', label="reward")
         plt.grid()
-        plt.title(method_name + ': Cum. Reward in experiment %d: %.4f' % (episode, self.cum_reward))
+        plt.title(algorithm + ': Cum. Reward in experiment %d: %.4f' % (episode, self.cum_reward))
         plt.ylabel("Cumulated Reward")
         plt.xlabel("Step")
         plt.legend()
         plt.draw()
         plt.pause(PAUSE)
 
-    def plot_avg_reward_per_step(self, reward_memory, method_name, episode, steps):
+    def plot_avg_reward_per_step(self, reward_memory, algorithm, episode, steps):
         ci = 0.95  # 95% confidence interval
         #
         # Important:    Setting axis=0 results in the mean of reward at each step not in the episode. Since we save rewards
@@ -77,14 +77,16 @@ class Plotter():
         x = np.arange(0, steps, 1)
         ax = plt.fill_between(x=x, y1=lower_bound, y2=upper_bound, color='blue', alpha=0.2, label="CI %.2f" % ci)
         plt.grid()
-        plt.title(method_name + ': Avg. Reward per step in experiment %d: %.4f' % (episode, sum(reward_means) / steps))
+        plt.title(algorithm + ': Avg. Reward per step in experiment %d: %.4f' % (episode, sum(reward_means) / steps))
         plt.ylabel("Reward per step")
         plt.xlabel("Play")
         plt.legend()
         plt.draw()
         plt.pause(PAUSE)
 
-    def plot_reward_per_step(self, rewards, method_name, episode, steps):
+    def plot_reward_per_step(self, rewards, algorithm, episode, steps):
+        print('Avg. Reward in experiment %d: %.4f' % (episode, np.mean(rewards)))
+
         # clear plot frame
         plt.clf()
         # plot average reward
@@ -92,7 +94,7 @@ class Plotter():
 
         # plot upper/lower confidence bound
         plt.grid()
-        plt.title(method_name + ': Avg. Reward in experiment %d: %.4f' % (episode, np.mean(rewards)))
+        plt.title(algorithm + ': Avg. Reward in experiment %d: %.4f' % (episode, np.mean(rewards)))
         plt.ylabel("Reward")
         plt.xlabel("Step")
         plt.legend()
