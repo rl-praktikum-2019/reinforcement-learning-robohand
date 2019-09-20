@@ -7,7 +7,7 @@ import os
 from experiment_setup import ExperimentSetup
 from gym import make
 from utils.plots import init_cum_reward_plot, update_plot
-from plots.plotter import Plotter
+from utils.plotter import Plotter
 
 RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 

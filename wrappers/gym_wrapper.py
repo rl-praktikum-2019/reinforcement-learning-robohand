@@ -60,7 +60,7 @@ class ThrowEnvWrapper(gym.Wrapper):
 
         if abs(self.ball_center_vel_z) < 0.1:
             reward -= (1 - self.ball_center_vel_z) * 2
-            print((1 - self.ball_center_vel_z) * 2)
+            #print(-(1 - self.ball_center_vel_z) * 2)
             # diff = np.absolute(self.dmp_action - self.ddpg_action)
             # correction = diff[diff < self.threshold] = 0
             # reward = sum(correction)
