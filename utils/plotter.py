@@ -5,8 +5,6 @@ import gym
 from wrappers.gym_wrapper import ThrowEnvWrapper
 import seaborn as sns
 import multiprocessing as mp
-import time
-import pickle
 
 STEPS = 100
 EPISODES = 20
@@ -14,9 +12,14 @@ PAUSE = 1e-6
 
 
 class ProcessPlotter(object):
-    def __init__(self):
+    def __init__(self, algorithm, total_steps):
         self.x = []
         self.y = []
+        self.reward_memory = []
+        self.current_episode = 0
+        self.total_steps = total_steps
+        self.algorithm = algorithm
+        self.cum_rewards = []
 
     def terminate(self):
         plt.close('all')
@@ -28,39 +31,97 @@ class ProcessPlotter(object):
                 self.terminate()
                 return False
             else:
-                self.ax.clear()
-
-                self.plot_reward_per_step(command)
+                self.clear_axes()
+                self.plot_graphs_per_episode(command)
 
         self.fig.canvas.draw()
         return True
+
+    def clear_axes(self):
+        self.ax1.clear()
+        self.ax2.clear()
+        self.ax3.clear()
 
     def __call__(self, pipe):
         print('Starting plotting.')
 
         self.pipe = pipe
-        self.fig, self.ax = plt.subplots()
-        self.ax.set_title("Please wait for the end of the first episode.")
+        # self.fig, self.ax = plt.subplots()
+        self.fig, (self.ax1, self.ax2, self.ax3) = plt.subplots(3)
+        plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.2, hspace=0.5)
+
+        # self.ax.set_title('Please wait for the end of the first episode.')
         timer = self.fig.canvas.new_timer(interval=500)
         timer.add_callback(self.call_back)
         timer.start()
         plt.show()
 
-    def plot_reward_per_step(self, command):
-        data_array = command[:]
-        self.x = np.arange(0, len(data_array), 1)
-        self.y = data_array
-        plt.title('Reward per step')
-        plt.ylabel("Reward")
-        plt.xlabel("Step")
-        self.ax.plot(self.x, self.y, color='blue', label="reward")
+    def plot_graphs_per_episode(self, plot_data):
+        # TODO: this only works if we call this function per episode NOT per step
+        self.current_episode += 1
+        rewards, ball_heights = plot_data[0], plot_data[1]
+        self.reward_memory.append(rewards)
+        self.cum_rewards.append(sum(rewards))
+
+        ci = 0.95  # 95% confidence interval
+        #
+        # Important:    Setting axis=0 results in the mean of reward at each step not in the episode. Since we save rewards
+        #               for each episode (length of array is steps) in the reward memory we have a 2-dim array. We take the
+        #               mean of the column not the row!
+        #               (row=all rewards in an episode, column=reward at a step over all episodes)
+        #
+        reward_means = np.mean(self.reward_memory, axis=0)
+        stds = np.std(self.reward_memory, axis=0)
+
+        # compute upper/lower confidence bounds
+        test_stat = st.t.ppf((ci + 1) / 2, self.current_episode)
+        lower_bound = reward_means - test_stat * stds / np.sqrt(self.current_episode)
+        upper_bound = reward_means + test_stat * stds / np.sqrt(self.current_episode)
+
+        x = np.arange(0, self.total_steps, 1)
+
+        #
+        # First graph - Reward per step of the current episode
+        #
+        self.ax1.grid()
+        self.ax1.plot(rewards, color='orange', label="Last epsilon=%.2f" % 0)
+        self.ax1.set_title(
+            self.algorithm + ': Current avg. reward per step in experiment %d: %.4f' % (
+                self.current_episode, np.mean(rewards)))
+
+        #
+        # Second graph - Avg reward per step over all currently measured episodes
+        #
+        self.ax2.grid()
+        self.ax2.plot(reward_means, color='blue', label="Mean epsilon=%.2f" % 0)
+        self.ax2.set_title(
+            self.algorithm + ': Avg. reward per step in experiment %d: %.4f' % (
+            self.current_episode, sum(reward_means) / self.total_steps))
+        # plot upper/lower confidence bound
+        self.ax2.fill_between(x=x, y1=lower_bound, y2=upper_bound, color='blue', alpha=0.2, label="CI %.2f" % ci)
+
+        #
+        # Third graph - Ball height per step in last episode
+        #
+        self.ax3.set_ylim(0, 1)
+        self.ax3.plot(ball_heights, color='blue', label='Ball height')
+
+        # plot upper/lower confidence bound
+        self.ax3.set_title(
+            self.algorithm + ': Avg. Height in episode %d: %.4f' % (self.current_episode, np.mean(ball_heights)))
+        self.ax3.set_ylabel('Height')
+        self.ax3.set_xlabel('Step')
         plt.legend()
 
+        # plt.subplot_tool()
+        plt.ylabel("Reward")
+        plt.xlabel("Steps")
 
-class NBPlot(object):
-    def __init__(self):
+
+class Plot(object):
+    def __init__(self, algorithm, total_steps):
         self.plot_pipe, plotter_pipe = mp.Pipe()
-        self.plotter = ProcessPlotter()
+        self.plotter = ProcessPlotter(algorithm, total_steps)
         self.plot_process = mp.Process(target=self.plotter, args=(plotter_pipe,), daemon=True)
         self.plot_process.start()
 
@@ -74,23 +135,26 @@ class NBPlot(object):
 
 def main():
     env = ThrowEnvWrapper(gym.make('ThrowBall-v0'))
-    obs = env.reset()
-    reward_memory = []
-    episode_rewards = np.zeros(STEPS)
-    pl = NBPlot()
+
+    pl = Plot('TESTALGO', STEPS)
     for episode in range(EPISODES):
+        plot_data = []
 
         obs = env.reset()
-        episode_rewards[:] = 0
+        episode_rewards = np.zeros(STEPS)
+        episode_heights = np.zeros(STEPS)
         for step in range(STEPS):
             obs, reward, done, info = env.step(env.action_space.sample())
             episode_rewards[step] = reward
+            episode_heights[step] = env.ball_center_z
             if done:
                 break
             env.render()
-        pl.plot(episode_rewards)
-
-        reward_memory.append(episode_rewards)
+        plot_data.append(episode_rewards)
+        plot_data.append(episode_heights)
+        # pl.plot(episode_heights)
+        # pl.plot(episode_rewards)
+        pl.plot(plot_data)
 
     pl.plot(finished=True)
     env.close()
@@ -128,151 +192,16 @@ class Plotter():
         plt.show()
 
     def boxplot(step_reward_box):
-        plt.figure(figsize=(20,10))
+        plt.figure(figsize=(20, 10))
         plt.xticks(rotation=-45)
         # plot boxplot with seaborn
-        bplot=sns.boxplot(y='step_reward', x='configuration',
-                        data=step_reward_box,
-                        width=0.75,
-                        palette="colorblind")
+        bplot = sns.boxplot(y='step_reward', x='configuration',
+                            data=step_reward_box,
+                            width=0.75,
+                            palette="colorblind")
         # add swarmplot
-        bplot=sns.swarmplot(y='step_reward', x='configuration',
-                    data=step_reward_box,
-                    color='black',
-                    alpha=0.75)
+        bplot = sns.swarmplot(y='step_reward', x='configuration',
+                              data=step_reward_box,
+                              color='black',
+                              alpha=0.75)
         return plt
-
-    def plot_cum_reward_per_step(self, reward, algorithm, episode):
-        self.cum_reward += reward
-        self.cum_rewards.append(self.cum_reward)
-
-        # clear plot frame
-        plt.clf()
-
-        # plot average reward
-        ax = plt.plot(self.cum_rewards, color='blue', label="reward")
-        plt.grid()
-        plt.title(algorithm + ': Cum. Reward in experiment %d: %.4f' % (episode, self.cum_reward))
-        plt.ylabel("Cumulated Reward")
-        plt.xlabel("Step")
-        plt.legend()
-        plt.draw()
-        plt.pause(PAUSE)
-
-    def plot_avg_reward_per_step(self, reward_memory, algorithm, episode, steps):
-        ci = 0.95  # 95% confidence interval
-        #
-        # Important:    Setting axis=0 results in the mean of reward at each step not in the episode. Since we save rewards
-        #               for each episode (length of array is steps) in the reward memory we have a 2-dim array. We take the
-        #               mean of the column not the row!
-        #               (row=all rewards in an episode, column=reward at a step over all episodes)
-        #
-        reward_means = np.mean(reward_memory, axis=0)
-        stds = np.std(reward_memory, axis=0)
-
-        # compute upper/lower confidence bounds
-        test_stat = st.t.ppf((ci + 1) / 2, episode)
-        lower_bound = reward_means - test_stat * stds / np.sqrt(episode)
-        upper_bound = reward_means + test_stat * stds / np.sqrt(episode)
-
-        # clear plot frame
-        plt.clf()
-        plt.cla()
-        plt.close()
-
-        # plot average reward
-        #fig = plt.figure(constrained_layout=True)
-
-        fig, (ax1, ax2) = plt.subplots(2)
-        #ax = fig.add_subplot(111)    # The big subplot
-        #ax1 = fig.add_subplot(211)
-        #ax2 = fig.add_subplot(212)
-
-        # plot upper/lower confidence bound
-        x = np.arange(0, steps, 1)
-
-        #ax.spines['top'].set_color('none')
-        #ax.spines['bottom'].set_color('none')
-        #ax.spines['left'].set_color('none')
-        #ax.spines['right'].set_color('none')
-        #ax.tick_params(labelcolor='none', top='off', bottom='off', left='off', right='off')
-
-        #ax.set_ylabel("Reward per step")
-        #ax.set_xlabel("Steps")
-
-        ax1.grid()
-        ax1.plot(reward_memory[-1], color='orange', label="Last epsilon=%.2f" % 0)
-        ax1.set_title(algorithm + ': Last reward per step in experiment %d: %.4f' % (episode, sum(reward_means) / steps))
-
-        ax2.grid()
-        ax2.plot(reward_means, color='blue', label="Mean epsilon=%.2f" % 0)
-        ax2.set_title(algorithm + ': Avg. reward per step in experiment %d: %.4f' % (episode, sum(reward_means) / steps))
-        ax2 = plt.fill_between(x=x, y1=lower_bound, y2=upper_bound, color='blue', alpha=0.2, label="CI %.2f" % ci)
-
-        plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.2, hspace=0.5)
-        #plt.subplot_tool()
-        plt.ylabel("                                                 Reward")
-        plt.xlabel("Steps")
-        plt.draw()
-        plt.pause(PAUSE)
-
-    def plot_reward_per_step(self, rewards, algorithm, episode, steps):
-        print('Avg. Reward in experiment %d: %.4f' % (episode, np.mean(rewards)))
-
-        # clear plot frame
-        plt.clf()
-        # plot average reward
-        ax = plt.plot(rewards, color='blue', label="reward")
-
-        # plot upper/lower confidence bound
-        plt.grid()
-        plt.title(algorithm + ': Avg. Reward in experiment %d: %.4f' % (episode, np.mean(rewards)))
-        plt.ylabel("Reward")
-        plt.xlabel("Step")
-        plt.legend()
-        plt.draw()
-        plt.pause(PAUSE)
-
-    def plot_ballheight_per_step(self, env, method_name, episode):
-        self.ball_heights.append(env.ball_center_z)
-        # clear plot frame
-        plt.clf()
-
-        # plot average reward
-        ax = plt.plot(self.ball_heights, color='blue', label="reward")
-
-        # plot upper/lower confidence bound
-        plt.grid()
-        plt.title(method_name + ': Avg. Height in experiment %d: %.4f' % (episode, np.mean(self.ball_heights)))
-        plt.ylabel("Height")
-        plt.xlabel("Step")
-        plt.legend()
-        plt.draw()
-        plt.pause(PAUSE)
-
-# env = ThrowEnvWrapper(gym.make('ThrowBall-v0'))
-# obs = env.reset()
-# reward_memory = []
-# plotter = Plotter()
-#
-# plotter.initialize()
-# for episode in range(EPISODES):
-#
-#     obs = env.reset()
-#     episode_rewards = np.zeros(STEPS)
-#     for step in range(STEPS):
-#         obs, reward, done, info = env.step(env.action_space.sample())
-#         #plotter.plot_cum_reward_per_step(reward, 'DMP', episode + 1)
-#         episode_rewards[step] = reward
-#         if done:
-#             break
-#         env.render()
-#
-#     #plotter.clear_episode_data()
-#     reward_memory.append(episode_rewards)
-#     plotter.plot_avg_reward_per_step(reward_memory, 'DMP', episode + 1, STEPS)
-#
-#     #plotter.plot_reward_per_step(episode_rewards, 'DMP', episode + 1, STEPS)
-#
-# env.close()
-# plotter.close()

@@ -19,6 +19,7 @@ class ThrowEnvWrapper(gym.Wrapper):
         self.max_velocity = 0
         self.max_height = 0
         self.target_height = 0.4
+        self.ball_velp = np.zeros((3,))
         self.ball_center_z = 0
         self.ball_center_vel_z = 0
 
@@ -60,7 +61,6 @@ class ThrowEnvWrapper(gym.Wrapper):
 
         if abs(self.ball_center_vel_z) < 0.1:
             reward -= (1 - self.ball_center_vel_z) * 2
-            #print(-(1 - self.ball_center_vel_z) * 2)
             # diff = np.absolute(self.dmp_action - self.ddpg_action)
             # correction = diff[diff < self.threshold] = 0
             # reward = sum(correction)
@@ -95,14 +95,3 @@ class ThrowEnvWrapper(gym.Wrapper):
             # if dir > 0:
             #     reward += (self.ball_center_z - self.target_height) * 10.
         return reward
-
-    def get_ball_data(self):
-        # Positional velocity
-        x_pos = self.env.env.sim.data.get_body_xpos(BALL_OBJECT_NAME)
-
-        # Positional velocity
-        x_velp = self.env.env.sim.data.get_body_xvelp(BALL_OBJECT_NAME)
-
-        # Rotational velocity
-        x_velr = self.env.env.sim.data.get_body_xvelr(BALL_OBJECT_NAME)
-        return x_pos, x_velp, x_velr

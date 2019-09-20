@@ -5,9 +5,9 @@ import tensorflow as tf
 import argparse
 import os
 from experiment_setup import ExperimentSetup
-from gym import make
-from utils.plots import init_cum_reward_plot, update_plot
-from utils.plotter import Plotter
+from utils.plotter import Plot
+import matplotlib.pyplot as plt
+import multiprocessing as mp
 
 RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 
@@ -15,21 +15,20 @@ RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 def compute_action(setup, state=None, algorithm=None):
     action = None
     if 'ddpg' in algorithm and 'dmp' not in algorithm:
-        return (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
+        return None, (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
                 setup.actor_noise())[0]
 
     if 'dmp' in algorithm and 'ddpg' not in algorithm:
-        y_track, dy_track, ddy_track = setup.dmp.step()
-
-        action = np.full((20,), ddy_track[0])
+        y_track, dy_track, ddy_track = setup.dmp.step(tau=5)
+        action = np.full((20,), ddy_track[1])
         # Remove action for horizontal wrist joint
         action[0] = 0
         return action, None
 
     if 'dmp' in algorithm and 'ddpg' in algorithm:
-        y_track, dy_track, ddy_track = setup.dmp.step()
+        y_track, dy_track, ddy_track = setup.dmp.step(tau=5)
 
-        dmp_action = np.full((20,), ddy_track[0])
+        dmp_action = np.full((20,), ddy_track[1])
         # Remove action for horizontal wrist joint
         dmp_action[0] = 0
 
@@ -45,50 +44,42 @@ def compute_action(setup, state=None, algorithm=None):
 def train_experiment(algorithm, setup):
     env = setup.env
     writer = tf.summary.FileWriter(args['summary_dir'], setup.sess.graph)
+    writer.close()
 
-    print('INFO: Training for ' + algorithm)
     episode_length = int(args['max_episode_len'])
 
-    plotter = Plotter()
-    plotter.initialize()
-
     if 'dmp' in algorithm:
-        episode_length = 20
+        episode_length = setup.dmp.timesteps
 
-    reward_memory = []
-    cum_rewards = []
+    pl = Plot(algorithm, episode_length)
 
+    print('INFO: Training for ' + algorithm)
     for episode in range(int(args['max_episodes'])):
-        # rewards.clear()
-        # cum_rewards.clear()
+        plot_data = []
+
         ep_reward = 0
         rewards = np.zeros(episode_length)
+        heights = np.zeros(episode_length)
 
         state = env.reset()
 
         if 'dmp' in algorithm:
             setup.dmp.reset_state()
 
-        # TODO: see plot class todos
-        #if args['plot']:
-            #cum_plot = init_cum_reward_plot('random_' + str(episode_length), rewards, cum_rewards)
-
         for step in range(episode_length):
-            if args['render_env']:
-                env.render()
 
             action, ddpg_action = compute_action(setup, state, algorithm)
 
             # TODO: adapt reward to throw task at a different location
-            if ddpg_action is not None:
+            if ddpg_action is not None and action is not None:
                 action += ddpg_action
+            if action is None:
+                action = ddpg_action
+
             next_state, reward, terminal, info = env.step(action)
 
             rewards[step] = reward
-            cum_rewards.append(np.sum(rewards))
-
-            # if (step % int(args['plot_frequency'])) and args['plot']:
-            # update_plot(cum_plot, 'random_' + str(episode_length), cum_rewards)
+            heights[step] = env.ball_center_z
 
             if 'ddpg' in algorithm:
                 setup.update_replay_buffer(state, ddpg_action, next_state, reward, terminal)
@@ -104,24 +95,28 @@ def train_experiment(algorithm, setup):
 
             if terminal:
                 #TODO summary
-                summary_str = setup.sess.run(setup.summary_ops, feed_dict={
-                    setup.summary_vars[0]: ep_reward,
-                    setup.summary_vars[1]: setup.ep_ave_max_q / float(step)
-                })
+                if hasattr(setup, 'summary_ops'):
+                    summary_str = setup.sess.run(setup.summary_ops, feed_dict={
+                        setup.summary_vars[0]: ep_reward,
+                        setup.summary_vars[1]: setup.ep_ave_max_q / float(step)
+                    })
 
-                writer.add_summary(summary_str, episode)
-                writer.flush()
+                    writer.add_summary(summary_str, episode)
+                    writer.flush()
 
                 # TODO: Save performance metrics in separate class and print them from there
                 print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), episode,
                                                                              (setup.ep_ave_max_q / float(step + 1))))
                 break
-        reward_memory.append(rewards)
-        plotter.plot_avg_reward_per_step(reward_memory, algorithm, episode + 1, episode_length)
-        # plotter.plot_reward_per_step(rewards, method, episode, episode_length)
-        # plotter.clear_episode_data()
 
-    plotter.close()
+            if args['render_env']:
+                env.render()
+
+        plot_data.append(rewards)
+        plot_data.append(heights)
+        pl.plot(plot_data)
+
+    pl.plot(finished=True)
     env.close()
 
 
@@ -138,6 +133,9 @@ def main(args):
 
 # XXX: Parameters maybe to main?
 if __name__ == '__main__':
+    if plt.get_backend() == "MacOSX":
+        mp.set_start_method("forkserver")
+
     parser = argparse.ArgumentParser(description='provide arguments for DDPG agent')
 
     # plot parameters

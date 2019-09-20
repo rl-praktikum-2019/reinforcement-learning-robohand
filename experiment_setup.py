@@ -12,6 +12,7 @@ from utils.replay_buffer import ReplayBuffer
 from wrappers.gym_wrapper import ThrowEnvWrapper
 import pydmps
 
+
 def build_summaries():
     episode_reward = tf.Variable(0.)
     tf.summary.scalar("Reward", episode_reward)
@@ -43,17 +44,18 @@ class ExperimentSetup():
     def setup_ppo(self, args=None):
         sess = self.sess
         # TODO: Use same timesteps as in dmp or take them from args
-        self.timesteps=100
+        self.timesteps = 100
         print('INFO: ----------Setup PPO')
 
     # TODO: maybe pass dmp args
     def setup_dmp(self, args=None):
         # 1-dimensional since joint can only move in one axis -> up/down axis
-        self.trajectory = [[0], [-.15], [.15]]
+        self.trajectory = np.array([[0.0, 0.0, 0.0], [0.0, -.15, .15]])
         y_des = np.array(self.trajectory).T
         y_des -= y_des[:, 0][:, None]
-        self.dmp = pydmps.dmp_discrete.DMPs_discrete(n_dmps=1, n_bfs=200)
+        self.dmp = pydmps.dmp_discrete.DMPs_discrete(n_dmps=2, n_bfs=200, ay=np.ones(2)*10.0)
         self.dmp.imitate_path(y_des=y_des)
+        self.dmp.timesteps = int(self.dmp.timesteps / 5)
 
     def setup_ddpg(self, args):
         sess = self.sess
