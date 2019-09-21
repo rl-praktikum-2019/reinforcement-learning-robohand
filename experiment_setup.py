@@ -17,7 +17,7 @@ def build_summaries():
     episode_reward = tf.Variable(0.)
     tf.summary.scalar("Reward", episode_reward)
     episode_ave_max_q = tf.Variable(0.)
-    tf.summary.scalar("Qmax Value", episode_ave_max_q)
+    tf.summary.scalar("Qmax", episode_ave_max_q)
     summary_vars = [episode_reward, episode_ave_max_q]
     summary_ops = tf.summary.merge_all()
 
@@ -32,6 +32,8 @@ class ExperimentSetup():
 
         self.env = ThrowEnvWrapper(make(env_name, reward_type='dense'))
         self.env.seed(random_seed)
+
+        self.dmp_trajectory = None
 
     def setup_experiment(self, args):
         if 'ppo' in self.algorithm:
@@ -50,8 +52,8 @@ class ExperimentSetup():
     # TODO: maybe pass dmp args
     def setup_dmp(self, args=None):
         # 1-dimensional since joint can only move in one axis -> up/down axis
-        self.trajectory = np.array([[0.0, 0.0, 0.0], [0.0, -.15, .15]])
-        y_des = np.array(self.trajectory).T
+        self.dmp_trajectory = np.array([[0.0, 0.0, 0.0], [0.0, -.15, .15]])
+        y_des = np.array(self.dmp_trajectory).T
         y_des -= y_des[:, 0][:, None]
         self.dmp = pydmps.dmp_discrete.DMPs_discrete(n_dmps=2, n_bfs=200, ay=np.ones(2)*10.0)
         self.dmp.imitate_path(y_des=y_des)
@@ -84,7 +86,6 @@ class ExperimentSetup():
         self.summary_ops, self.summary_vars = build_summaries()
 
         sess.run(tf.global_variables_initializer())
-        writer = tf.summary.FileWriter(args['summary_dir'], sess.graph)
 
         # Initialize target network weights
         self.actor.update_target_network()
@@ -99,7 +100,6 @@ class ExperimentSetup():
         tflearn.is_training(True)
 
     def update_replay_buffer(self, state, action, next_state, reward, terminal):
-        # TODO: Find out what this is and rename it accordingly
         r_state = np.reshape(state, (self.actor.s_dim,))
         r_action = np.reshape(action, (self.actor.a_dim,))
         r_next_state = np.reshape(next_state, (self.actor.s_dim,))

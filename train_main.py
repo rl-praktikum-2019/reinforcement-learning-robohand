@@ -70,7 +70,6 @@ def train_experiment(algorithm, setup):
 
             action, ddpg_action = compute_action(setup, state, algorithm)
 
-            # TODO: adapt reward to throw task at a different location
             if ddpg_action is not None and action is not None:
                 action += ddpg_action
             if action is None:
@@ -94,19 +93,17 @@ def train_experiment(algorithm, setup):
                 ep_reward += reward
 
             if terminal:
-                #TODO summary
+                ave_max_q_per_step = setup.ep_ave_max_q / float(step + 1)
                 if hasattr(setup, 'summary_ops'):
                     summary_str = setup.sess.run(setup.summary_ops, feed_dict={
                         setup.summary_vars[0]: ep_reward,
-                        setup.summary_vars[1]: setup.ep_ave_max_q / float(step)
+                        setup.summary_vars[1]: ave_max_q_per_step
                     })
 
                     writer.add_summary(summary_str, episode)
                     writer.flush()
 
-                # TODO: Save performance metrics in separate class and print them from there
-                print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), episode,
-                                                                             (setup.ep_ave_max_q / float(step + 1))))
+                print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), episode, ave_max_q_per_step))
                 break
 
             if args['render_env']:
@@ -173,6 +170,3 @@ if __name__ == '__main__':
     pp.pprint(args)
 
     main(args)
-    # run_dmp_ddpg_experiment(args)
-    # run_dmp_experiment(args)
-    # run_ddpg_experiment(args)
