@@ -47,7 +47,8 @@ class ProcessPlotter(object):
 
         self.pipe = pipe
         # self.fig, self.ax = plt.subplots()
-        self.fig, (self.ax1, self.ax2, self.ax3) = plt.subplots(3)
+        self.fig, (self.ax1, self.ax2, self.ax3) = plt.subplots(3, num='Performance measures')
+
         plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.2, hspace=0.5)
 
         # self.ax.set_title('Please wait for the end of the first episode.')
@@ -96,7 +97,7 @@ class ProcessPlotter(object):
         self.ax2.plot(reward_means, color='blue', label="Mean epsilon=%.2f" % 0)
         self.ax2.set_title(
             self.algorithm + ': Avg. reward per step in experiment %d: %.4f' % (
-            self.current_episode, sum(reward_means) / self.total_steps))
+                self.current_episode, sum(reward_means) / self.total_steps))
         # plot upper/lower confidence bound
         self.ax2.fill_between(x=x, y1=lower_bound, y2=upper_bound, color='blue', alpha=0.2, label="CI %.2f" % ci)
 
@@ -104,6 +105,8 @@ class ProcessPlotter(object):
         # Third graph - Ball height per step in last episode
         #
         self.ax3.set_ylim(0, 1)
+        self.ax3.axhline(y=0.4, alpha=.3, color='g')
+        self.ax3.axhline(y=0.5, alpha=.4, color='g')
         self.ax3.plot(ball_heights, color='blue', label='Ball height')
 
         # plot upper/lower confidence bound
@@ -114,8 +117,6 @@ class ProcessPlotter(object):
         plt.legend()
 
         # plt.subplot_tool()
-        plt.ylabel("Reward")
-        plt.xlabel("Steps")
 
 
 class Plot(object):
@@ -131,39 +132,6 @@ class Plot(object):
             send(None)
         else:
             send(data)
-
-
-def main():
-    env = ThrowEnvWrapper(gym.make('ThrowBall-v0'))
-
-    pl = Plot('TESTALGO', STEPS)
-    for episode in range(EPISODES):
-        plot_data = []
-
-        obs = env.reset()
-        episode_rewards = np.zeros(STEPS)
-        episode_heights = np.zeros(STEPS)
-        for step in range(STEPS):
-            obs, reward, done, info = env.step(env.action_space.sample())
-            episode_rewards[step] = reward
-            episode_heights[step] = env.ball_center_z
-            if done:
-                break
-            env.render()
-        plot_data.append(episode_rewards)
-        plot_data.append(episode_heights)
-        # pl.plot(episode_heights)
-        # pl.plot(episode_rewards)
-        pl.plot(plot_data)
-
-    pl.plot(finished=True)
-    env.close()
-
-
-if __name__ == '__main__':
-    if plt.get_backend() == "MacOSX":
-        mp.set_start_method("forkserver")
-    main()
 
 
 class Plotter():
