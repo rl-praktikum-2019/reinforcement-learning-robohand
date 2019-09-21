@@ -9,7 +9,7 @@ from ddpg.actor_network import ActorNetwork
 from ddpg.critic_network import CriticNetwork
 from utils.noise import OrnsteinUhlenbeckActionNoise
 from utils.replay_buffer import ReplayBuffer
-from wrappers.gym_wrapper import ThrowEnvWrapper
+from utils.gym_wrapper import ThrowEnvWrapper
 import pydmps
 
 

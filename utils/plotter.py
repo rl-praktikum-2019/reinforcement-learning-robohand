@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
-import gym
-from wrappers.gym_wrapper import ThrowEnvWrapper
 import seaborn as sns
 import multiprocessing as mp
 

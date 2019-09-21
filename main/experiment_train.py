@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 import argparse
 import os
-from experiment_setup import ExperimentSetup
+from main.experiment_setup import ExperimentSetup
 from utils.plotter import Plot
 import matplotlib.pyplot as plt
 import multiprocessing as mp
