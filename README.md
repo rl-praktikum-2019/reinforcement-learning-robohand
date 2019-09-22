@@ -95,6 +95,9 @@ pip install requirements.txt
 pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment
 
 ````
+## Dependencies
+
+All dependencies are included in the ``requirements.txt``
 
 # Run
 
