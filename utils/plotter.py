@@ -49,7 +49,7 @@ class ProcessPlotter(object):
 
         mngr = plt.get_current_fig_manager()
         # to put it into the upper left corner for example:
-        mngr.window.setGeometry(0,65,545, 545)
+        mngr.window.setGeometry(0,65,545, 600)
 
         plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.2, hspace=0.9)
 
@@ -76,6 +76,8 @@ class ProcessPlotter(object):
         reward_means = np.mean(self.reward_memory, axis=0)
         stds = np.std(self.reward_memory, axis=0)
 
+        self.fig.suptitle(self.algorithm + ' in episode %d' % self.current_episode, fontsize=14)
+
         # compute upper/lower confidence bounds
         test_stat = st.t.ppf((ci + 1) / 2, self.current_episode)
         lower_bound = reward_means - test_stat * stds / np.sqrt(self.current_episode)
@@ -88,20 +90,17 @@ class ProcessPlotter(object):
         #
         self.ax1.grid()
         self.ax1.plot(rewards, color='orange', label="Last epsilon=%.2f" % 0)
-        self.ax1.set_title(
-            self.algorithm + ': Current avg. reward per step in experiment %d: %.4f' % (
-                self.current_episode, np.mean(rewards)))
+        self.ax1.set_title('Current avg. reward per step: %.4f' % np.mean(rewards))
         self.ax1.set_ylabel('Reward')
         self.ax1.set_xlabel('Step')
-        
+
         #
         # Second graph - Avg reward per step over all currently measured episodes
         #
         self.ax2.grid()
         self.ax2.plot(reward_means, color='blue', label="Mean epsilon=%.2f" % 0)
-        self.ax2.set_title(
-            self.algorithm + ': Avg. reward per step in experiment %d: %.4f' % (
-                self.current_episode, sum(reward_means) / self.total_steps))
+        self.ax2.set_title('Avg. reward per step: %.4f' % (
+                sum(reward_means) / self.total_steps))
         # plot upper/lower confidence bound
         self.ax2.fill_between(x=x, y1=lower_bound, y2=upper_bound, color='blue', alpha=0.2, label="CI %.2f" % ci)
         self.ax2.set_ylabel('Reward')
@@ -115,8 +114,7 @@ class ProcessPlotter(object):
         self.ax3.plot(ball_heights, color='blue', label='Ball height')
 
         # plot upper/lower confidence bound
-        self.ax3.set_title(
-            self.algorithm + ': Avg. Height in episode %d: %.4f' % (self.current_episode, np.mean(ball_heights)))
+        self.ax3.set_title('Avg. Height in episode: %.4f' % np.mean(ball_heights))
         self.ax3.set_ylabel('Height')
         self.ax3.set_xlabel('Step')
         plt.legend()
