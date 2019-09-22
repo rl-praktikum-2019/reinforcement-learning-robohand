@@ -24,6 +24,7 @@ class ThrowEnvWrapper(gym.Wrapper):
         self.ball_velp = np.zeros((3,))
         self.ball_center_z = 0
         self.ball_center_vel_z = 0
+        self.reached_target = False
 
     def reset(self, **kwargs):
         obs = self.env.reset(**kwargs)
@@ -44,54 +45,26 @@ class ThrowEnvWrapper(gym.Wrapper):
         return observation["observation"], self.reward(reward), done, info
 
     def reward(self, reward):
-        # reward = 0
+        # self.reward_functionB(reward)
+        return self.reward_functionB()
+        #return reward
+
+    def reward_functionA(self):
+        reward = 1 - (self.target_height - self.ball_center_z) / self.target_height
+        z_direction = np.sign(self.ball_center_vel_z)
+        if z_direction > 0:
+            reward += self.ball_center_vel_z * 10
+        return reward
+
+    def reward_functionB(self):
+        reward = 1 - (self.target_height - self.ball_center_z) / self.target_height
         z_direction = np.sign(self.ball_center_vel_z)
 
-        # if self.ball_center_z > self.target_height:
-        #     print("Success. Ball in target region.")
-        #     reward += 20
-        #
-        # if self.ball_center_z > self.target_height + 0.05:
-        #     print("Success. Ball in target region.")
-        #     reward += 40
+        if not self.reached_target and self.ball_center_z > self.target_height:
+            reward += 100
+            self.reached_target = True
 
-        # if z_direction > 0:
-        #     reward += (1 - self.ball_center_vel_z)
+        if z_direction < 0:
+            reward = 0
 
-        # if abs(self.ball_center_vel_z) < 0.1:
-        #     reward -= (1 - self.ball_center_vel_z) * 2
-
-            # diff = np.absolute(self.dmp_action - self.ddpg_action)
-            # correction = diff[diff < self.threshold] = 0
-            # reward = sum(correction)
-
-            # if z_direction > 0:
-            #     reward += self.ball_center_vel_z * 10.
-            #     reward += abs(self.ball_velp[0]) * -20.
-            #     reward += abs(self.ball_velp[1]) * -20.
-
-            # if self.ball_center_vel_z > self.max_velocity:
-            #     velocity_reward = self.ball_center_vel_z * 10.
-            #     reward += velocity_reward
-            #     print("New achieved max velocity:", self.ball_center_vel_z)
-            #     self.max_velocity = self.ball_center_vel_z
-
-            # if self.ball_center_z > self.max_height:
-            #     height_reward = self.ball_center_z * 20.
-            #     reward += height_reward
-            #     self.max_height = self.ball_center_z
-            #     print("New achieved max height:", self.ball_center_z)
-
-            # achieved = self.ball_velp / np.linalg.norm(self.ball_velp, ord=1)
-            # delta_vel = self.desired_ball_velocity - achieved
-            # d_vel = np.linalg.norm(delta_vel, axis=-1)
-            # vel_reward = (10. * d_vel)
-            # reward -= vel_reward
-
-            # if self.ball_center_z <= BALL_RADIUS:
-            #     print("Ball was dropped: -20 reward")
-            #     return -100
-
-            # if z_direction > 0:
-            #     reward += (self.ball_center_z - self.target_height) * 10.
         return reward

@@ -105,6 +105,7 @@ class ProcessPlotter(object):
         self.ax2.fill_between(x=x, y1=lower_bound, y2=upper_bound, color='blue', alpha=0.2, label="CI %.2f" % ci)
         self.ax2.set_ylabel('Reward')
         self.ax2.set_xlabel('Step')
+
         #
         # Third graph - Ball height per step in last episode
         #
@@ -112,8 +113,6 @@ class ProcessPlotter(object):
         self.ax3.axhline(y=0.4, alpha=.3, color='g')
         self.ax3.axhline(y=0.5, alpha=.4, color='g')
         self.ax3.plot(ball_heights, color='blue', label='Ball height')
-
-        # plot upper/lower confidence bound
         self.ax3.set_title('Avg. Height in episode: %.4f' % np.mean(ball_heights))
         self.ax3.set_ylabel('Height')
         self.ax3.set_xlabel('Step')
