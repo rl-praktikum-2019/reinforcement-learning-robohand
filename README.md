@@ -58,7 +58,7 @@ export PYTHONPATH="$PYTHONPATH:/Users/<username>/git_tree/reinforcement-learning
 ````
 
 
-##Installation on Ubuntu
+## Installation on Ubuntu
 
 As mentioned above make sure that mujoco binaries are in``$HOME/.mujoco/mujoco200/`` and your key is in ``$HOME/.mujoco/``
 
