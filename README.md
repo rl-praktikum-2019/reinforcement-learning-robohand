@@ -26,10 +26,14 @@ For OS specific install instructions go to the suiting subsection
 
 ## Installation for Macbook
 ```
-conda create reinforcement_learning_venv python=3.6
-conda activate reinforcement_learning_venv
+conda create --name reinforcement-learning-robohand_venv python=3.6
+conda activate reinforcement-learning-robohand_venv
 
-pip install gym
+Before installing the custom env, make sure gym has been uninstalled.
+Install custom environment via: 
+
+``pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment``
+``pip install -r requirements.txt``
 
 brew install cmake boost boost-python sdl2 swig wget
 
@@ -50,12 +54,11 @@ touch ./etc/conda/deactivate.d/env_vars.sh
 Add following exports to $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh:
 ```
 export LD_LIBRARY_PATH=/Users/studyingam//.mujoco
-export PYTHONPATH="$PYTHONPATH:/Users/studyingam/git_tree/reinforcement-learning-2019"
+export PYTHONPATH="$PYTHONPATH:/Users/<username>/git_tree/reinforcement-learning-robohand"
 ````
 
 
-
-## Installation on Ubuntu
+##Installation on Ubuntu
 
 As mentioned above make sure that mujoco binaries are in``$HOME/.mujoco/mujoco200/`` and your key is in ``$HOME/.mujoco/``
 
@@ -88,7 +91,7 @@ Install mujoco-py and [our custom environment](#custom-environment-for-ball-thro
 
 
 ```
-pip install mujoco-py
+pip install requirements.txt
 pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment
 
 ````
@@ -107,7 +110,6 @@ Add ``LD_LIBRARY_PATH`` with value ``$HOME/.mujoco/mujoco200/bin`` as a environm
 Github Repository: https://github.com/rl-praktikum-2019/gym
 
 Before installing the custom env, make sure gym has been uninstalled.
-
 Install custom environment via: 
 
 ``pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment``

@@ -1,0 +1,8 @@
+git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment
+mujoco-py
+tensorflow
+tflearn
+pydmps
+matplotlib
+PyQt5
+seaborn
