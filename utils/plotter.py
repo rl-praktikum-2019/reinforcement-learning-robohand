@@ -47,7 +47,11 @@ class ProcessPlotter(object):
         # self.fig, self.ax = plt.subplots()
         self.fig, (self.ax1, self.ax2, self.ax3) = plt.subplots(3, num='Performance measures')
 
-        plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.2, hspace=0.5)
+        mngr = plt.get_current_fig_manager()
+        # to put it into the upper left corner for example:
+        mngr.window.setGeometry(0,65,545, 545)
+
+        plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.2, hspace=0.9)
 
         # self.ax.set_title('Please wait for the end of the first episode.')
         timer = self.fig.canvas.new_timer(interval=500)
