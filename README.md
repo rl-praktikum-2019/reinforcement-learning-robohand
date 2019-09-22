@@ -32,8 +32,8 @@ conda activate reinforcement-learning-robohand_venv
 Before installing the custom env, make sure gym has been uninstalled.
 Install custom environment via: 
 
-``pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment``
-``pip install -r requirements.txt``
+pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment
+pip install -r requirements.txt``
 
 brew install cmake boost boost-python sdl2 swig wget
 
@@ -42,7 +42,7 @@ ls zu gcc-x in '/usr/local/Cellar/gcc'
 export CC=/usr/local/Cellar/gcc/9.1.0/bin/gcc-9
 
 pip install -U 'mujoco-py<2.1,>=2.0'
-````
+```
 ### Environment variables for conda env
 ```
 cd $CONDA_PREFIX
@@ -93,8 +93,8 @@ Install mujoco-py and [our custom environment](#custom-environment-for-ball-thro
 ```
 pip install requirements.txt
 pip install git+git://github.com/rl-praktikum-2019/gym.git@throw-ball-environment
+```
 
-````
 ## Dependencies
 
 All dependencies are included in the ``requirements.txt``
