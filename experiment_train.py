@@ -17,7 +17,7 @@ def compute_action(setup, episode, state, algorithm):
 
     if 'ddpg' in algorithm and 'dmp' not in algorithm:
         action = (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) + setup.actor_noise())[0]
-        return action, None
+        return action, action
 
     if 'dmp' in algorithm and 'ddpg' not in algorithm:
         y_track, dy_track, ddy_track = setup.dmp.step(tau=5)
