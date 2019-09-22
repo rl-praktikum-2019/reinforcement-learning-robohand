@@ -45,7 +45,7 @@ class ThrowEnvWrapper(gym.Wrapper):
         return observation["observation"], self.reward(reward), done, info
 
     def reward(self, reward):
-        # self.reward_functionB(reward)
+        #return self.reward_functionA()
         return self.reward_functionB()
         #return reward
 
