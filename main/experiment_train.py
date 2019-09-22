@@ -12,11 +12,12 @@ import multiprocessing as mp
 RESULTS_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 
 
-def compute_action(setup, state=None, algorithm=None):
+def compute_action(setup, episode, state, algorithm):
     action = None
+
     if 'ddpg' in algorithm and 'dmp' not in algorithm:
-        return None, (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
-                setup.actor_noise())[0]
+        action = (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) + setup.actor_noise())[0]
+        return action, None
 
     if 'dmp' in algorithm and 'ddpg' not in algorithm:
         y_track, dy_track, ddy_track = setup.dmp.step(tau=5)
@@ -32,19 +33,16 @@ def compute_action(setup, state=None, algorithm=None):
         # Remove action for horizontal wrist joint
         dmp_action[0] = 0
 
-        ddpg_action = (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) +
-                       setup.actor_noise())[0]
+        ddpg_action = (setup.actor.predict(np.reshape(state, (1, setup.actor.s_dim))) + setup.actor_noise())[0]
+        action = ddpg_action + dmp_action
+        return action, ddpg_action
 
-        return dmp_action, ddpg_action
-
-    assert action is not None
-    return action, None
+    return action
 
 
 def train_experiment(algorithm, setup):
     env = setup.env
     writer = tf.summary.FileWriter(args['summary_dir'], setup.sess.graph)
-    writer.close()
 
     episode_length = int(args['max_episode_len'])
 
@@ -67,13 +65,7 @@ def train_experiment(algorithm, setup):
             setup.dmp.reset_state()
 
         for step in range(episode_length):
-
-            action, ddpg_action = compute_action(setup, state, algorithm)
-
-            if ddpg_action is not None and action is not None:
-                action += ddpg_action
-            if action is None:
-                action = ddpg_action
+            action, ddpg_action = compute_action(setup, episode, state, algorithm)
 
             next_state, reward, terminal, info = env.step(action)
 
@@ -82,8 +74,6 @@ def train_experiment(algorithm, setup):
 
             if 'ddpg' in algorithm:
                 setup.update_replay_buffer(state, ddpg_action, next_state, reward, terminal)
-
-                # XXX: Select only args we need instead of all args
                 setup.learn_ddpg_minibatch(args)
 
                 # NOTE: Important for DDPG actor prediction!
@@ -93,17 +83,7 @@ def train_experiment(algorithm, setup):
                 ep_reward += reward
 
             if terminal:
-                ave_max_q_per_step = setup.ep_ave_max_q / float(step + 1)
-                if hasattr(setup, 'summary_ops'):
-                    summary_str = setup.sess.run(setup.summary_ops, feed_dict={
-                        setup.summary_vars[0]: ep_reward,
-                        setup.summary_vars[1]: ave_max_q_per_step
-                    })
-
-                    writer.add_summary(summary_str, episode)
-                    writer.flush()
-
-                print('| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), episode, ave_max_q_per_step))
+                print_episode_performance(ep_reward, episode, setup, step, writer)
                 break
 
             if args['render_env']:
@@ -115,6 +95,21 @@ def train_experiment(algorithm, setup):
 
     pl.plot(finished=True)
     env.close()
+    writer.close()
+
+
+def print_episode_performance(ep_reward, episode, setup, step, writer):
+    ave_max_q_per_step = setup.ep_ave_max_q / float(step + 1)
+    if hasattr(setup, 'summary_ops'):
+        summary_str = setup.sess.run(setup.summary_ops, feed_dict={
+            setup.summary_vars[0]: ep_reward,
+            setup.summary_vars[1]: ave_max_q_per_step
+        })
+
+        writer.add_summary(summary_str, episode)
+        writer.flush()
+    print(
+        '| Reward: {:d} | Episode: {:d} | Qmax: {:.4f}'.format(int(ep_reward), episode, ave_max_q_per_step))
 
 
 def main(args):
@@ -150,8 +145,8 @@ if __name__ == '__main__':
     # run parameters
     parser.add_argument('--env', help='choose the gym env- tested on {Pendulum-v0}', default='HandManipulateEgg-v0')
     parser.add_argument('--random-seed', help='random seed for repeatability', default=1234)
-    parser.add_argument('--max-episodes', help='max num of episodes to do while training', default=1000)
-    parser.add_argument('--max-episode-len', help='max length of 1 episode', default=1000)
+    parser.add_argument('--max-episodes', help='max num of episodes to do while training', default=10000)
+    parser.add_argument('--max-episode-len', help='max length of 1 episode', default=20)
     parser.add_argument('--render-env', help='render the gym env', action='store_true')
     parser.add_argument('--use-gym-monitor', help='record gym results', action='store_true')
     parser.add_argument('--monitor-dir', help='directory for storing gym results',

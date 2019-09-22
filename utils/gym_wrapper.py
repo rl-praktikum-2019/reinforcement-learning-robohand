@@ -10,7 +10,9 @@ BALL_JOINT_NAME = "object:joint"
 class ThrowEnvWrapper(gym.Wrapper):
     #
     #
-    # Adapt gym - The final adapted gym wrapper with the best adaptions for reward and observations
+    # Gym wrapper with features:
+    # - new reward function
+    # - detect ball collision with ground and reset
     #
     #
     def __init__(self, env):
@@ -41,31 +43,29 @@ class ThrowEnvWrapper(gym.Wrapper):
 
         return observation["observation"], self.reward(reward), done, info
 
-    #
-    # Reward function:
-    #   - return: reward => just reward how close the ball came to the target ball
-    #
     def reward(self, reward):
-        reward = 0
-        dir = np.sign(self.ball_center_vel_z)
-        # if dir > 0:
-        #     return 0
+        # reward = 0
+        z_direction = np.sign(self.ball_center_vel_z)
 
-        if self.ball_center_z > self.target_height:
-            print("Success. Ball in target region.")
-            reward += 20
+        # if self.ball_center_z > self.target_height:
+        #     print("Success. Ball in target region.")
+        #     reward += 20
+        #
+        # if self.ball_center_z > self.target_height + 0.05:
+        #     print("Success. Ball in target region.")
+        #     reward += 40
 
-        if self.ball_center_z > self.target_height + 0.05:
-            print("Success. Ball in target region.")
-            reward += 40
+        # if z_direction > 0:
+        #     reward += (1 - self.ball_center_vel_z)
 
-        if abs(self.ball_center_vel_z) < 0.1:
-            reward -= (1 - self.ball_center_vel_z) * 2
+        # if abs(self.ball_center_vel_z) < 0.1:
+        #     reward -= (1 - self.ball_center_vel_z) * 2
+
             # diff = np.absolute(self.dmp_action - self.ddpg_action)
             # correction = diff[diff < self.threshold] = 0
             # reward = sum(correction)
 
-            # if dir > 0:
+            # if z_direction > 0:
             #     reward += self.ball_center_vel_z * 10.
             #     reward += abs(self.ball_velp[0]) * -20.
             #     reward += abs(self.ball_velp[1]) * -20.
@@ -76,11 +76,11 @@ class ThrowEnvWrapper(gym.Wrapper):
             #     print("New achieved max velocity:", self.ball_center_vel_z)
             #     self.max_velocity = self.ball_center_vel_z
 
-            if self.ball_center_z > self.max_height:
-                height_reward = self.ball_center_z * 20.
-                reward += height_reward
-                self.max_height = self.ball_center_z
-                print("New achieved max height:", self.ball_center_z)
+            # if self.ball_center_z > self.max_height:
+            #     height_reward = self.ball_center_z * 20.
+            #     reward += height_reward
+            #     self.max_height = self.ball_center_z
+            #     print("New achieved max height:", self.ball_center_z)
 
             # achieved = self.ball_velp / np.linalg.norm(self.ball_velp, ord=1)
             # delta_vel = self.desired_ball_velocity - achieved
@@ -92,6 +92,6 @@ class ThrowEnvWrapper(gym.Wrapper):
             #     print("Ball was dropped: -20 reward")
             #     return -100
 
-            # if dir > 0:
+            # if z_direction > 0:
             #     reward += (self.ball_center_z - self.target_height) * 10.
         return reward

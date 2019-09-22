@@ -87,7 +87,9 @@ class ProcessPlotter(object):
         self.ax1.set_title(
             self.algorithm + ': Current avg. reward per step in experiment %d: %.4f' % (
                 self.current_episode, np.mean(rewards)))
-
+        self.ax1.set_ylabel('Reward')
+        self.ax1.set_xlabel('Step')
+        
         #
         # Second graph - Avg reward per step over all currently measured episodes
         #
@@ -98,7 +100,8 @@ class ProcessPlotter(object):
                 self.current_episode, sum(reward_means) / self.total_steps))
         # plot upper/lower confidence bound
         self.ax2.fill_between(x=x, y1=lower_bound, y2=upper_bound, color='blue', alpha=0.2, label="CI %.2f" % ci)
-
+        self.ax2.set_ylabel('Reward')
+        self.ax2.set_xlabel('Step')
         #
         # Third graph - Ball height per step in last episode
         #
