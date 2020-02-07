@@ -9,6 +9,10 @@ to allow an agent, e.g. a robot to take actions and interact with its environmen
 to maximise the total rewards. If this reminds you of training a dog, you are correct.
 So far this approach has also been quite successful for autonomous systems, robotics and gaming. If you would like to know how a human can teach a robot to learn on its own and reach a given goal, please feel welcome to join this talk.
 
+## Presentation Slides:
+* [Uni-presentation]() [edit](https://docs.google.com/presentation/d/1oRmDDGKMB_C7ISJgBT3auB_IZWQQS9eyBsHfChOiap8/edit)
+* [Robby in 5 min, PyConDe 2019 Lightning Talk]() [edit](https://docs.google.com/presentation/d/11uKLWPDoD_YKr--j9TG3pPIvMzhpDtq16oPdWPUVLnY/edit)
+
 # Important Documentations
 
 [MuJoCo Python API](https://openai.github.io/mujoco-py/build/html/index.html)
