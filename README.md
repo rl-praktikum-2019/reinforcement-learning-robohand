@@ -1,6 +1,14 @@
 # Project: Training a robot hand to throw a ball
 ## LMU Reinforcement Learning Praktikum 2019
 
+## Abstract:
+You can teach an old robot new tricks:
+As a university project, I was able to spend the last weeks learning more about
+Reinforcement Learning and implement a project. Reinforcement Learning is a technique
+to allow an agent, e.g. a robot to take actions and interact with its environment so as
+to maximise the total rewards. If this reminds you of training a dog, you are correct.
+So far this approach has also been quite successful for autonomous systems, robotics and gaming. If you would like to know how a human can teach a robot to learn on its own and reach a given goal, please feel welcome to join this talk.
+
 # Important Documentations
 
 [MuJoCo Python API](https://openai.github.io/mujoco-py/build/html/index.html)
